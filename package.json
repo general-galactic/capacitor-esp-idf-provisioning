@@ -1,6 +1,6 @@
 {
   "name": "@general-galactic/capacitor-esp-idf-provisioning",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A capacitor plugin that wraps the Espressif IDF Provisioning libraires for iOS and Android.",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
@@ -17,10 +17,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://www.github.com/@general-galactic/capacitor-esp-idf-provisioning.git"
+    "url": "git+https://www.github.com/general-galactic/capacitor-esp-idf-provisioning.git"
   },
   "bugs": {
-    "url": "https://www.github.com/@general-galactic/capacitor-esp-idf-provisioning/issues"
+    "url": "https://www.github.com/general-galactic/capacitor-esp-idf-provisioning/issues"
   },
   "keywords": [
     "capacitor",

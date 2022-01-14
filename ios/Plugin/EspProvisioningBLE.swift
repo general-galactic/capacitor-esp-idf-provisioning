@@ -13,6 +13,27 @@ enum ESPProvisioningError: Error {
     case unableToConvertDataToString
 }
 
+extension ESPProvisioningError: LocalizedError {
+    public var localizedDescription: String? {
+        switch self {
+        case .missingRequiredField(let missingFieldName):
+            return NSLocalizedString("\(missingFieldName) is required", comment: "Missing required field")
+        case .libraryError(let errorMessage, let errorCode):
+            return NSLocalizedString("\(errorMessage) [\(errorCode ?? 0)]", comment: "ESPProvisioning error")
+        case .deviceNotFound(let deviceId):
+            return NSLocalizedString("Device not found: \(deviceId)", comment: "Device not found error")
+        case .failedToConnect(let deviceId):
+            return NSLocalizedString("Failed to connect to device: \(deviceId)", comment: "Failed to connect to device error")
+        case .disconnected(let deviceId):
+            return NSLocalizedString("Device disconnected: \(deviceId)", comment: "Device disconnected error")
+        case .unableToConvertStringToData:
+            return NSLocalizedString("Error converting custom data string to Data", comment: "Unable to convert string to data error")
+        case .unableToConvertDataToString:
+            return NSLocalizedString("Error converting response Data to string ", comment: "Unable to convert data to string error")
+        }
+    }
+}
+
 
 class ConnectionDelegate: ESPDeviceConnectionDelegate {
 
