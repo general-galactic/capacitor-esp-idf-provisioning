@@ -4,7 +4,7 @@ import { WebPlugin } from '@capacitor/core';
 import type { ESPDevice, ESPNetwork, EspProvisioningPlugin, ESPSecurity, ESPTransport, PermissionStatus } from './definitions';
 
 export class EspProvisioningWeb extends WebPlugin implements EspProvisioningPlugin {
-  
+
   // TODO: offer a fake implementation to be used when testing in a browser
   
   checkPermissions(): Promise<PermissionStatus> {
@@ -19,23 +19,23 @@ export class EspProvisioningWeb extends WebPlugin implements EspProvisioningPlug
     throw new Error('Method not implemented.');
   }
 
-  connect(_options: { id: string; }): Promise<{ connected: boolean; }> {
+  connect(_options: { deviceName: string; proofOfPossession: string }): Promise<{ connected: boolean; }> {
     throw new Error('Method not implemented.');
   }
 
-  scanWifiList(_options: { id: string; }): Promise<{ networks?: ESPNetwork[] | undefined; }> {
+  scanWifiList(_options: { deviceName: string; }): Promise<{ networks?: ESPNetwork[] | undefined; }> {
     throw new Error('Method not implemented.');
   }
 
-  provision(_options: { id: string; ssid: string; passPhrase: string; }): Promise<{ success: boolean; }> {
+  provision(_options: { deviceName: string; ssid: string; passPhrase: string; }): Promise<{ success: boolean; }> {
     throw new Error('Method not implemented.');
   }
 
-  sendCustomDataString(_options: { id: string; path: string; data: string; }): Promise<{ success: boolean; data?: string | undefined; }> {
+  sendCustomDataString(_options: { deviceName: string; path: string; dataString: string; }): Promise<{ success: boolean; returnString?: string | undefined; }> {
     throw new Error('Method not implemented.');
   }
 
-  disconnect(_options: { id: string; }): Promise<void> {
+  disconnect(_options: { deviceName: string; }): Promise<void> {
     throw new Error('Method not implemented.');
   }
 
@@ -55,4 +55,8 @@ export class EspProvisioningWeb extends WebPlugin implements EspProvisioningPlug
     throw new Error('Method not implemented.');
   }
 
+  disableLogging(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  
 }

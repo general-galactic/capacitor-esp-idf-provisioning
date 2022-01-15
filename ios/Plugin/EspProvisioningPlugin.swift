@@ -8,7 +8,7 @@ import CoreBluetooth
  * Please read the Capacitor iOS Plugin Development Guide
  * here: https://capacitorjs.com/docs/plugins/ios
  */
-@objc(PhunPlugin)
+@objc(EspProvisioningPlugin)
 public class EspProvisioningPlugin: CAPPlugin {
     
     private let implementation = EspProvisioningBLE()
@@ -45,7 +45,7 @@ public class EspProvisioningPlugin: CAPPlugin {
   
         implementation.searchESPDevices(devicePrefix: devicePrefix, transport: transport, security: security) { devices, error in
             if let error = error {
-                call.reject(error.localizedDescription)
+                call.reject(error.message)
                 return
             }
             
@@ -55,16 +55,16 @@ public class EspProvisioningPlugin: CAPPlugin {
     }
   
     @objc func connect(_ call: CAPPluginCall) {
-        guard let deviceId = call.getString("deviceId") else {
-            return call.reject("deviceId is required")
+        guard let deviceName = call.getString("deviceName") else {
+            return call.reject("deviceName is required")
         }
         guard let proofOfPossession = call.getString("proofOfPossession") else {
             return call.reject("proofOfPossession is required")
         }
         
-        implementation.connect(deviceId: deviceId, proofOfPossession: proofOfPossession) { success, error in
+        implementation.connect(deviceName: deviceName, proofOfPossession: proofOfPossession) { success, error in
             if let error = error {
-                call.reject(error.localizedDescription)
+                call.reject(error.message)
                 return
             }
             call.resolve(["success": success])
@@ -72,13 +72,13 @@ public class EspProvisioningPlugin: CAPPlugin {
     }
     
     @objc func scanWifiList(_ call: CAPPluginCall) {
-        guard let deviceId = call.getString("deviceId") else {
-            return call.reject("deviceId is required")
+        guard let deviceName = call.getString("deviceName") else {
+            return call.reject("deviceName is required")
         }
 
-        implementation.scanWifiList(deviceId: deviceId) { networks, error in
+        implementation.scanWifiList(deviceName: deviceName) { networks, error in
             if let error = error {
-                call.reject(error.localizedDescription)
+                call.reject(error.message)
                 return
             }
         
@@ -88,8 +88,8 @@ public class EspProvisioningPlugin: CAPPlugin {
     }
     
     @objc func provision(_ call: CAPPluginCall) {
-        guard let deviceId = call.getString("deviceId") else {
-            return call.reject("deviceId is required")
+        guard let deviceName = call.getString("deviceName") else {
+            return call.reject("deviceName is required")
         }
         guard let ssid = call.getString("ssid") else {
             return call.reject("ssid is required")
@@ -98,9 +98,9 @@ public class EspProvisioningPlugin: CAPPlugin {
             return call.reject("passPhrase is required")
         }
         
-        implementation.provision(deviceId: deviceId, ssid: ssid, passPhrase: passPhrase) { success, error in
+        implementation.provision(deviceName: deviceName, ssid: ssid, passPhrase: passPhrase) { success, error in
             if let error = error {
-                call.reject(error.localizedDescription)
+                call.reject(error.message)
                 return
             }
             call.resolve(["success": true])
@@ -108,19 +108,19 @@ public class EspProvisioningPlugin: CAPPlugin {
     }
     
     @objc func sendCustomDataString(_ call: CAPPluginCall){
-        guard let deviceId = call.getString("deviceId") else {
-            return call.reject("deviceId is required")
+        guard let deviceName = call.getString("deviceName") else {
+            return call.reject("deviceName is required")
         }
         guard let path = call.getString("path") else {
             return call.reject("path is required")
         }
-        guard let string = call.getString("string") else {
-            return call.reject("string is required")
+        guard let dataString = call.getString("dataString") else {
+            return call.reject("dataString is required")
         }
        
-        implementation.sendCustomDataString(deviceId: deviceId, path: path, string: string) { returnString, error in
+        implementation.sendCustomDataString(deviceName: deviceName, path: path, dataString: dataString) { returnString, error in
             if let error = error {
-                call.reject(error.localizedDescription)
+                call.reject(error.message)
                 return
             }
             
@@ -133,13 +133,13 @@ public class EspProvisioningPlugin: CAPPlugin {
     }
     
     @objc func disconnect(_ call: CAPPluginCall) {
-        guard let deviceId = call.getString("deviceId") else {
-            return call.reject("deviceId is required")
+        guard let deviceName = call.getString("deviceName") else {
+            return call.reject("deviceName is required")
         }
 
-        implementation.disconnect(deviceId: deviceId) { success, error in
+        implementation.disconnect(deviceName: deviceName) { success, error in
             if let error = error {
-                call.reject(error.localizedDescription)
+                call.reject(error.message)
                 return
             }
             call.resolve(["success": success])
@@ -199,7 +199,6 @@ public class EspProvisioningPlugin: CAPPlugin {
         var devicesOutput: [Dictionary<String, Any>] = []
         for device in devices {
             var deviceOutput: [String:Any] = [:]
-            deviceOutput["id"] = device.name
             deviceOutput["name"] = device.name
             if let advertisementData = device.advertisementData {
                 deviceOutput["advertisementData"] = self.advertisementDataToJS(advertisementData)

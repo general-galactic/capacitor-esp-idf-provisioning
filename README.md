@@ -8,6 +8,10 @@ A capacitor plugin that wraps the Espressif IDF Provisioning libraires for iOS a
 npm install @general-galactic/capacitor-esp-idf-provisioning
 npx cap sync
 ```
+## Troublshooting
+
+**Getting error: `ESPProvisioning is not implemented on [iOS|Android]`**
+You need to run `npx cap sync`
 
 ## API
 
@@ -25,6 +29,7 @@ npx cap sync
 * [`openBluetoothSettings()`](#openbluetoothsettings)
 * [`openAppSettings()`](#openappsettings)
 * [`enableLogging()`](#enablelogging)
+* [`disableLogging()`](#disablelogging)
 * [Interfaces](#interfaces)
 * [Type Aliases](#type-aliases)
 * [Enums](#enums)
@@ -62,6 +67,8 @@ requestPermissions() => Promise<PermissionStatus>
 searchESPDevices(options: { devicePrefix: string; transport: ESPTransport; security: ESPSecurity; }) => Promise<{ devices?: ESPDevice[]; }>
 ```
 
+Perform a scan for devices with the given devicePrefix
+
 | Param         | Type                                                                                                                                          |
 | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | **`options`** | <code>{ devicePrefix: string; transport: <a href="#esptransport">ESPTransport</a>; security: <a href="#espsecurity">ESPSecurity</a>; }</code> |
@@ -74,12 +81,14 @@ searchESPDevices(options: { devicePrefix: string; transport: ESPTransport; secur
 ### connect(...)
 
 ```typescript
-connect(options: { id: string; }) => Promise<{ connected: boolean; }>
+connect(options: { deviceName: string; proofOfPossession: string; }) => Promise<{ connected: boolean; }>
 ```
 
-| Param         | Type                         |
-| ------------- | ---------------------------- |
-| **`options`** | <code>{ id: string; }</code> |
+Connect to the device with the given name using the given proofOfPossession
+
+| Param         | Type                                                            |
+| ------------- | --------------------------------------------------------------- |
+| **`options`** | <code>{ deviceName: string; proofOfPossession: string; }</code> |
 
 **Returns:** <code>Promise&lt;{ connected: boolean; }&gt;</code>
 
@@ -89,12 +98,14 @@ connect(options: { id: string; }) => Promise<{ connected: boolean; }>
 ### scanWifiList(...)
 
 ```typescript
-scanWifiList(options: { id: string; }) => Promise<{ networks?: ESPNetwork[]; }>
+scanWifiList(options: { deviceName: string; }) => Promise<{ networks?: ESPNetwork[]; }>
 ```
 
-| Param         | Type                         |
-| ------------- | ---------------------------- |
-| **`options`** | <code>{ id: string; }</code> |
+Request a list of available WiFi networks from the device with the given name
+
+| Param         | Type                                 |
+| ------------- | ------------------------------------ |
+| **`options`** | <code>{ deviceName: string; }</code> |
 
 **Returns:** <code>Promise&lt;{ networks?: ESPNetwork[]; }&gt;</code>
 
@@ -104,12 +115,14 @@ scanWifiList(options: { id: string; }) => Promise<{ networks?: ESPNetwork[]; }>
 ### provision(...)
 
 ```typescript
-provision(options: { id: string; ssid: string; passPhrase: string; }) => Promise<{ success: boolean; }>
+provision(options: { deviceName: string; ssid: string; passPhrase: string; }) => Promise<{ success: boolean; }>
 ```
 
-| Param         | Type                                                           |
-| ------------- | -------------------------------------------------------------- |
-| **`options`** | <code>{ id: string; ssid: string; passPhrase: string; }</code> |
+Provision the device onto WiFi using the given ssid and passPhrase
+
+| Param         | Type                                                                   |
+| ------------- | ---------------------------------------------------------------------- |
+| **`options`** | <code>{ deviceName: string; ssid: string; passPhrase: string; }</code> |
 
 **Returns:** <code>Promise&lt;{ success: boolean; }&gt;</code>
 
@@ -119,14 +132,16 @@ provision(options: { id: string; ssid: string; passPhrase: string; }) => Promise
 ### sendCustomDataString(...)
 
 ```typescript
-sendCustomDataString(options: { id: string; path: string; data: string; }) => Promise<{ success: boolean; data?: string; }>
+sendCustomDataString(options: { deviceName: string; path: string; dataString: string; }) => Promise<{ success: boolean; returnString?: string; }>
 ```
 
-| Param         | Type                                                     |
-| ------------- | -------------------------------------------------------- |
-| **`options`** | <code>{ id: string; path: string; data: string; }</code> |
+Send a custom string to the device with the given name
 
-**Returns:** <code>Promise&lt;{ success: boolean; data?: string; }&gt;</code>
+| Param         | Type                                                                   |
+| ------------- | ---------------------------------------------------------------------- |
+| **`options`** | <code>{ deviceName: string; path: string; dataString: string; }</code> |
+
+**Returns:** <code>Promise&lt;{ success: boolean; returnString?: string; }&gt;</code>
 
 --------------------
 
@@ -134,12 +149,14 @@ sendCustomDataString(options: { id: string; path: string; data: string; }) => Pr
 ### disconnect(...)
 
 ```typescript
-disconnect(options: { id: string; }) => Promise<void>
+disconnect(options: { deviceName: string; }) => Promise<void>
 ```
 
-| Param         | Type                         |
-| ------------- | ---------------------------- |
-| **`options`** | <code>{ id: string; }</code> |
+Disconnect from the device
+
+| Param         | Type                                 |
+| ------------- | ------------------------------------ |
+| **`options`** | <code>{ deviceName: string; }</code> |
 
 --------------------
 
@@ -149,6 +166,8 @@ disconnect(options: { id: string; }) => Promise<void>
 ```typescript
 openLocationSettings() => Promise<{ value: boolean; }>
 ```
+
+Open the user's location settings for your app. iOS only.
 
 **Returns:** <code>Promise&lt;{ value: boolean; }&gt;</code>
 
@@ -161,6 +180,8 @@ openLocationSettings() => Promise<{ value: boolean; }>
 openBluetoothSettings() => Promise<{ value: boolean; }>
 ```
 
+Open the user's bluetooth settings for your app. iOS only.
+
 **Returns:** <code>Promise&lt;{ value: boolean; }&gt;</code>
 
 --------------------
@@ -172,6 +193,8 @@ openBluetoothSettings() => Promise<{ value: boolean; }>
 openAppSettings() => Promise<{ value: boolean; }>
 ```
 
+Open the settings for your app
+
 **Returns:** <code>Promise&lt;{ value: boolean; }&gt;</code>
 
 --------------------
@@ -182,6 +205,19 @@ openAppSettings() => Promise<{ value: boolean; }>
 ```typescript
 enableLogging() => Promise<void>
 ```
+
+Enable detailed logging. iOS only.
+
+--------------------
+
+
+### disableLogging()
+
+```typescript
+disableLogging() => Promise<void>
+```
+
+Disable detailed logging. iOS only.
 
 --------------------
 

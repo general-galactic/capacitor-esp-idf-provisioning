@@ -6,26 +6,26 @@ import Foundation
 enum ESPProvisioningError: Error {
     case missingRequiredField(_ missingFieldName: String)
     case libraryError(_ errorMessage: String, errorCode: Int? )
-    case deviceNotFound(_ deviceId: String)
-    case failedToConnect(_ deviceId: String)
-    case disconnected(_ deviceId: String)
+    case deviceNotFound(_ deviceName: String)
+    case failedToConnect(_ deviceName: String)
+    case disconnected(_ deviceName: String)
     case unableToConvertStringToData
     case unableToConvertDataToString
 }
 
 extension ESPProvisioningError: LocalizedError {
-    public var localizedDescription: String? {
+    public var message: String {
         switch self {
         case .missingRequiredField(let missingFieldName):
             return NSLocalizedString("\(missingFieldName) is required", comment: "Missing required field")
         case .libraryError(let errorMessage, let errorCode):
             return NSLocalizedString("\(errorMessage) [\(errorCode ?? 0)]", comment: "ESPProvisioning error")
-        case .deviceNotFound(let deviceId):
-            return NSLocalizedString("Device not found: \(deviceId)", comment: "Device not found error")
-        case .failedToConnect(let deviceId):
-            return NSLocalizedString("Failed to connect to device: \(deviceId)", comment: "Failed to connect to device error")
-        case .disconnected(let deviceId):
-            return NSLocalizedString("Device disconnected: \(deviceId)", comment: "Device disconnected error")
+        case .deviceNotFound(let deviceName):
+            return NSLocalizedString("Device not found: \(deviceName)", comment: "Device not found error")
+        case .failedToConnect(let deviceName):
+            return NSLocalizedString("Failed to connect to device: \(deviceName)", comment: "Failed to connect to device error")
+        case .disconnected(let deviceName):
+            return NSLocalizedString("Device disconnected: \(deviceName)", comment: "Device disconnected error")
         case .unableToConvertStringToData:
             return NSLocalizedString("Error converting custom data string to Data", comment: "Unable to convert string to data error")
         case .unableToConvertDataToString:
@@ -50,7 +50,7 @@ class ConnectionDelegate: ESPDeviceConnectionDelegate {
 }
 
 
-@objc public class EspProvisioningBLE: NSObject {
+public class EspProvisioningBLE: NSObject {
 
     private var deviceMap = [String: ESPDevice]()
     private var loggingEnabled = false
@@ -121,34 +121,44 @@ class ConnectionDelegate: ESPDeviceConnectionDelegate {
     func enableLogging() -> Void {
         self.loggingEnabled = true
         ESPProvisionManager.shared.enableLogs(true)
+        self.debug("ENABLED LOGGING")
     }
     
     func disableLogging() -> Void {
+        self.debug("DISABLED LOGGING")
         self.loggingEnabled = false
         ESPProvisionManager.shared.enableLogs(false)
     }
     
-    func print(_ message: String){
+    func debug(_ message: String){
         if(self.loggingEnabled) {
-            print(message)
+            print("EspProvisioning: \(message)")
         }
     }
 
-    func searchESPDevices(devicePrefix: String, transport: ESPTransport, security: ESPSecurity, completionHandler: @escaping ([ESPDevice]?, Error?) -> Void) -> Void {
+    func searchESPDevices(devicePrefix: String, transport: ESPTransport, security: ESPSecurity, completionHandler: @escaping ([ESPDevice]?, ESPProvisioningError?) -> Void) -> Void {
         // guard bluetoothIsAccessible(call) else { return } // TODO: make these guards work, this one fails the first time because BLE is slow as fuck
         
         self.deviceMap = [:] // reset our cached devices
 
-        self.print("Running searchESPDevices: devicePrefix=\(devicePrefix); transport=\(transport); security=\(security);")
+        self.debug("Running searchESPDevices: devicePrefix=\(devicePrefix); transport=\(transport); security=\(security);")
         ESPProvisionManager.shared.searchESPDevices(devicePrefix: devicePrefix, transport: transport, security: security) { devices, error in
-            self.print("searchESPDevices callback: devicePrefix=\(devicePrefix); transport=\(transport); security=\(security);")
+            self.debug("searchESPDevices callback: devicePrefix=\(devicePrefix); transport=\(transport); security=\(security);")
 
             if let error = error {
                 if( error.code == 27){ // No Devices Found
                     completionHandler([], nil)
                 }
-                self.print("searchESPDevices error: code=\(error.code); description=\(error.description);")
+                self.debug("searchESPDevices error: code=\(error.code); description=\(error.description);")
                 completionHandler(nil, ESPProvisioningError.libraryError(error.description, errorCode: error.code))
+            }
+            
+            // We need to cache devices so we can retain references to them while the capacitor bridge is used to
+            // perform operations
+            if let devices = devices {
+                for device in devices {
+                    self.deviceMap[device.name] = device
+                }
             }
 
             completionHandler(devices, nil)
@@ -156,87 +166,87 @@ class ConnectionDelegate: ESPDeviceConnectionDelegate {
     }
 
     // TODO: Proof of Possession
-    func connect(deviceId: String, proofOfPossession: String, completionHandler: @escaping (Bool, Error?) -> Void) -> Void {
-        guard let device = self.deviceMap[deviceId] else {
-            return completionHandler(false, ESPProvisioningError.deviceNotFound(deviceId))
+    func connect(deviceName: String, proofOfPossession: String, completionHandler: @escaping (Bool, ESPProvisioningError?) -> Void) -> Void {
+        guard let device = self.deviceMap[deviceName] else {
+            return completionHandler(false, ESPProvisioningError.deviceNotFound(deviceName))
         }
 
-        self.print("Connecting to device: \(deviceId)")
+        self.debug("Connecting to device: \(deviceName) \(proofOfPossession)")
 
         device.connect(delegate: ConnectionDelegate(proofOfPossesion: proofOfPossession)) { status in
             switch status {
             case .connected:
-                self.print("Connected to device: \(deviceId)")
+                self.debug("Connected to device: \(deviceName)")
                 return completionHandler(true, nil)
             case .failedToConnect(_):
-                return completionHandler(false, ESPProvisioningError.failedToConnect(deviceId))
+                return completionHandler(false, ESPProvisioningError.failedToConnect(deviceName))
             case .disconnected:
-                return completionHandler(false, ESPProvisioningError.disconnected(deviceId))
+                return completionHandler(false, ESPProvisioningError.disconnected(deviceName))
             }
         }
     }
 
-    func scanWifiList(deviceId: String, completionHandler: @escaping ([ESPWifiNetwork]?, Error?) -> Void) -> Void {
-        guard let device = self.deviceMap[deviceId] else {
-            return completionHandler(nil, ESPProvisioningError.deviceNotFound(deviceId))
+    func scanWifiList(deviceName: String, completionHandler: @escaping ([ESPWifiNetwork]?, ESPProvisioningError?) -> Void) -> Void {
+        guard let device = self.deviceMap[deviceName] else {
+            return completionHandler(nil, ESPProvisioningError.deviceNotFound(deviceName))
         }
 
-        self.print("Scanning for WiFi from device: \(deviceId)")
+        self.debug("Scanning for WiFi from device: \(deviceName)")
 
         device.scanWifiList { networks, error in
             if let error = error {
-                self.print("Error scanning wifi: \(error)")
+                self.debug("Error scanning wifi: \(error)")
                 completionHandler(nil, ESPProvisioningError.libraryError(error.description, errorCode: error.code))
                 return
             }
 
-            self.print("Got networks: \(String(describing: networks))")
+            self.debug("Got networks: \(String(describing: networks))")
 
             completionHandler(networks, nil)
         }
     }
 
-    func provision(deviceId: String, ssid: String, passPhrase: String, completionHandler: @escaping (Bool, Error?) -> Void) -> Void {
-        guard let device = self.deviceMap[deviceId] else {
-            return completionHandler(false, ESPProvisioningError.deviceNotFound(deviceId))
+    func provision(deviceName: String, ssid: String, passPhrase: String, completionHandler: @escaping (Bool, ESPProvisioningError?) -> Void) -> Void {
+        guard let device = self.deviceMap[deviceName] else {
+            return completionHandler(false, ESPProvisioningError.deviceNotFound(deviceName))
         }
         
-        self.print("Provisioning device: \(deviceId)")
+        self.debug("Provisioning device: \(deviceName)")
         
         device.provision(ssid: ssid, passPhrase: passPhrase) { status in
             switch status {
             case .success:
-                self.print("Provisioned Device: \(deviceId)");
+                self.debug("Provisioned Device: \(deviceName)");
                 completionHandler(true, nil)
             case .configApplied:
-                self.print("WiFi Config applied");
+                self.debug("WiFi Config applied");
             case .failure(let error):
                 completionHandler(false, ESPProvisioningError.libraryError(error.description, errorCode: error.code))
             }
         }
     }
 
-    func sendCustomDataString(deviceId: String, path: String, string: String, completionHandler: @escaping (String?, Error?) -> Void) -> Void {
-        guard let stringData = string.data(using: .utf8) else {
+    func sendCustomDataString(deviceName: String, path: String, dataString: String, completionHandler: @escaping (String?, ESPProvisioningError?) -> Void) -> Void {
+        guard let stringData = dataString.data(using: .utf8) else {
             completionHandler(nil, ESPProvisioningError.unableToConvertStringToData)
             return
         }
-        guard let device = self.deviceMap[deviceId] else {
-            return completionHandler(nil, ESPProvisioningError.deviceNotFound(deviceId))
+        guard let device = self.deviceMap[deviceName] else {
+            return completionHandler(nil, ESPProvisioningError.deviceNotFound(deviceName))
         }
         
-        self.print("Sending custom data[deviceId=\(deviceId)]: \(path), \(string)")
+        self.debug("Sending custom data[deviceName=\(deviceName)]: \(path), \(dataString)")
         
         device.sendData(path: path, data: stringData) { data, error in
             if let error = error {
-                self.print("Error sending custom data: \(error)")
+                self.debug("Error sending custom data: \(error)")
                 completionHandler(nil, ESPProvisioningError.libraryError(error.description, errorCode: error.code))
                 return
             }
             
             if let data = data {
                 if let returnString = String(data: data, encoding: .utf8) {
-                    self.print("Sent custom data: returnString=\(returnString)")
+                    self.debug("Sent custom data: returnString=\(returnString)")
                     completionHandler(returnString, nil)
                 }else{
                     completionHandler(nil, ESPProvisioningError.unableToConvertDataToString)
@@ -247,17 +257,14 @@ class ConnectionDelegate: ESPDeviceConnectionDelegate {
         }
     }
 
-    func disconnect(deviceId: String, completionHandler: @escaping (Bool, Error?) -> Void) {
-        guard let device = self.deviceMap[deviceId] else {
-            return completionHandler(false, ESPProvisioningError.deviceNotFound(deviceId))
+    func disconnect(deviceName: String, completionHandler: @escaping (Bool, ESPProvisioningError?) -> Void) {
+        guard let device = self.deviceMap[deviceName] else {
+            return completionHandler(false, ESPProvisioningError.deviceNotFound(deviceName))
         }
 
         device.disconnect()
+        self.deviceMap = [:]
         completionHandler(true, nil)
-    }
-
-    public func getProofOfPossesion(forDevice: ESPDevice, completionHandler: @escaping (String) -> Void) {
-        completionHandler("secret") // TODO: need to actually do this
     }
 
 }
