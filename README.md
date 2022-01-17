@@ -1,6 +1,11 @@
 # @general-galactic/capacitor-esp-idf-provisioning
 
-A capacitor plugin that wraps the Espressif IDF Provisioning libraires for iOS and Android.
+A capacitor plugin that wraps the Espressif IDF Provisioning libraries for iOS and Android.
+
+- [IDF Provisioning Overview](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/provisioning/provisioning.html)
+- [IDF Provisioning Library for iOS](https://github.com/espressif/esp-idf-provisioning-ios)
+- [IDF Provisioning Library for Android](https://github.com/espressif/esp-idf-provisioning-android)
+
 
 ## Install
 
@@ -22,14 +27,12 @@ allprojects {
 }
 ```
 
-## Initial Integration into an iOS App
-
-TODO
-
-
 ## Troublshooting
 
-**Getting error: `ESPProvisioning is not implemented on [iOS|Android]`**
+**`Android build won't run after adding the npm dependency`**
+You need to add the `https://jitpack.io` repository to your `build.gradle`. See 'Initial Integration into an Android App' above.
+
+**`ESPProvisioning is not implemented on [iOS|Android]`**
 You need to run `npx cap sync`
 
 ## API
@@ -64,6 +67,10 @@ You need to run `npx cap sync`
 checkPermissions() => Promise<PermissionStatus>
 ```
 
+Check the status of system permissions:
+- **ble** - Bluetooth access
+- **location** - Location access, android only
+
 **Returns:** <code>Promise&lt;<a href="#permissionstatus">PermissionStatus</a>&gt;</code>
 
 --------------------
@@ -74,6 +81,8 @@ checkPermissions() => Promise<PermissionStatus>
 ```typescript
 requestPermissions() => Promise<PermissionStatus>
 ```
+
+Have the system prompt the user for access to the proper permissions - Android only.
 
 **Returns:** <code>Promise&lt;<a href="#permissionstatus">PermissionStatus</a>&gt;</code>
 
@@ -86,7 +95,8 @@ requestPermissions() => Promise<PermissionStatus>
 searchESPDevices(options: { devicePrefix: string; transport: ESPTransport; security: ESPSecurity; }) => Promise<{ devices?: ESPDevice[]; }>
 ```
 
-Perform a scan for devices with the given devicePrefix
+Perform a BLE scan to find devices that are connection with the given devicePrefix. The transport and security
+parameters map directly to ESPProvision's own values.
 
 | Param         | Type                                                                                                                                          |
 | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -103,7 +113,7 @@ Perform a scan for devices with the given devicePrefix
 connect(options: { deviceName: string; proofOfPossession: string; }) => Promise<{ connected: boolean; }>
 ```
 
-Connect to the device with the given name using the given proofOfPossession
+Connect to the device with the given name using the given proofOfPossession.
 
 | Param         | Type                                                            |
 | ------------- | --------------------------------------------------------------- |
@@ -120,7 +130,7 @@ Connect to the device with the given name using the given proofOfPossession
 scanWifiList(options: { deviceName: string; }) => Promise<{ networks?: ESPNetwork[]; }>
 ```
 
-Request a list of available WiFi networks from the device with the given name
+Request a list of available WiFi networks from the device with the given name.
 
 | Param         | Type                                 |
 | ------------- | ------------------------------------ |
@@ -137,7 +147,7 @@ Request a list of available WiFi networks from the device with the given name
 provision(options: { deviceName: string; ssid: string; passPhrase: string; }) => Promise<{ success: boolean; }>
 ```
 
-Provision the device onto WiFi using the given ssid and passPhrase
+Provision the device onto WiFi using the given ssid and passPhrase.
 
 | Param         | Type                                                                   |
 | ------------- | ---------------------------------------------------------------------- |
@@ -154,7 +164,8 @@ Provision the device onto WiFi using the given ssid and passPhrase
 sendCustomDataString(options: { deviceName: string; path: string; dataString: string; }) => Promise<{ success: boolean; returnString?: string; }>
 ```
 
-Send a custom string to the device with the given name
+Send a custom string to the device with the given name. This is usefull if you need to share other data with
+your device during provisioning.
 
 | Param         | Type                                                                   |
 | ------------- | ---------------------------------------------------------------------- |
@@ -171,7 +182,7 @@ Send a custom string to the device with the given name
 disconnect(options: { deviceName: string; }) => Promise<void>
 ```
 
-Disconnect from the device
+Disconnect from the device.
 
 | Param         | Type                                 |
 | ------------- | ------------------------------------ |
@@ -212,7 +223,7 @@ Open the user's bluetooth settings for your app. iOS only.
 openAppSettings() => Promise<{ value: boolean; }>
 ```
 
-Open the settings for your app
+Open the OS settings for your app.
 
 **Returns:** <code>Promise&lt;{ value: boolean; }&gt;</code>
 
@@ -225,7 +236,8 @@ Open the settings for your app
 enableLogging() => Promise<void>
 ```
 
-Enable detailed logging. iOS only.
+Enable extra logging - useful for troubleshooting. Best on iOS because the iOS ESPProvision
+library offers much more verbose logging when enabled.
 
 --------------------
 
@@ -236,7 +248,7 @@ Enable detailed logging. iOS only.
 disableLogging() => Promise<void>
 ```
 
-Disable detailed logging. iOS only.
+Disable detailed logging.
 
 --------------------
 
