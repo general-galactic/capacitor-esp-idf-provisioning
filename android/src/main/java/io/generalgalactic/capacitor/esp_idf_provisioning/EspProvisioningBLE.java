@@ -78,7 +78,6 @@ public class EspProvisioningBLE {
         return this.bridge.getContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
     }
 
-
     public boolean assertBluetoothAdapter() {
         if(!this.hasBLEHardware()){
             throw new Error("This device does not support BLE.");

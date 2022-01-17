@@ -48,8 +48,8 @@ public class EspProvisioningPlugin extends Plugin {
 
     private EspProvisioningBLE implementation;
 
-    public EspProvisioningPlugin(){
-        super();
+    @Override
+    public void load() {
         implementation = new EspProvisioningBLE(this.getBridge());
     }
 
