@@ -8,6 +8,25 @@ A capacitor plugin that wraps the Espressif IDF Provisioning libraires for iOS a
 npm install @general-galactic/capacitor-esp-idf-provisioning
 npx cap sync
 ```
+
+## Initial Integration into an Android App
+
+Apps will need to add the maven repo to their `build.gradle` file so that the ESPProvision library from Espressif can be included:
+```
+allprojects {
+    repositories {
+        google()
+        jcenter()
+        maven { url 'https://jitpack.io' } // <-- Add This line
+    }
+}
+```
+
+## Initial Integration into an iOS App
+
+TODO
+
+
 ## Troublshooting
 
 **Getting error: `ESPProvisioning is not implemented on [iOS|Android]`**

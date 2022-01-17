@@ -28,6 +28,11 @@ public class EspProvisioningPlugin: CAPPlugin {
         call.resolve()
     }
 
+    @objc func disableLogging(_ call: CAPPluginCall) {
+        implementation.disableLogging()
+        call.resolve()
+    }
+
     @objc func searchESPDevices(_ call: CAPPluginCall) {
         guard let devicePrefix = call.getString("devicePrefix") else {
             return call.reject("devicePrefix is required")
@@ -67,7 +72,7 @@ public class EspProvisioningPlugin: CAPPlugin {
                 call.reject(error.message)
                 return
             }
-            call.resolve(["success": success])
+            call.resolve(["connected": success])
         }
     }
     

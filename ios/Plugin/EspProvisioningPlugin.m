@@ -13,6 +13,7 @@ CAP_PLUGIN(EspProvisioningPlugin, "EspProvisioning",
     CAP_PLUGIN_METHOD(openBluetoothSettings, CAPPluginReturnPromise);
     CAP_PLUGIN_METHOD(openAppSettings, CAPPluginReturnPromise);
     CAP_PLUGIN_METHOD(enableLogging, CAPPluginReturnPromise);
+    CAP_PLUGIN_METHOD(disableLogging, CAPPluginReturnPromise);
     CAP_PLUGIN_METHOD(checkPermissions, CAPPluginReturnPromise);
     CAP_PLUGIN_METHOD(requestPermissions, CAPPluginReturnPromise);
     CAP_PLUGIN_METHOD(sendCustomDataString, CAPPluginReturnPromise);
