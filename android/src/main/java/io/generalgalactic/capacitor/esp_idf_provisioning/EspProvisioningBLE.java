@@ -225,7 +225,7 @@ public class EspProvisioningBLE {
             return null;
         }
 
-        if( espDevice.getDeviceName() != bleDevice.getName() ){
+        if( !espDevice.getDeviceName().equals(bleDevice.getName()) ){
             debugLog(String.format("Device mismatch. %s != %s", espDevice.getDeviceName(), bleDevice.getName()));
             listener.deviceNotFound(deviceName);
             return null;
