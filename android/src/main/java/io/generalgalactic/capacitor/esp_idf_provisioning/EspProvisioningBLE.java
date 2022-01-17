@@ -104,7 +104,7 @@ public class EspProvisioningBLE {
         this.assertBluetoothAdapter();
 
         if (ActivityCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Error permissionError = new Error("Not able to start scan as Location permission is not granted.")
+            Error permissionError = new Error("Not able to start scan as Location permission is not granted.");
             errorLog(permissionError);
             listener.errorOccurred(permissionError);
             return;
