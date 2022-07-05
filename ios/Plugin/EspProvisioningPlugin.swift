@@ -11,7 +11,7 @@ import CoreBluetooth
 @objc(EspProvisioningPlugin)
 public class EspProvisioningPlugin: CAPPlugin {
     
-    private let implementation = EspProvisioningBLE()
+    private let implementation = EspProvisioningBLE(self)
    
     @objc override public func checkPermissions(_ call: CAPPluginCall) {
         let result = implementation.checkPermissions()
@@ -67,9 +67,13 @@ public class EspProvisioningPlugin: CAPPlugin {
             return call.reject("proofOfPossession is required")
         }
         
-        implementation.connect(deviceName: deviceName, proofOfPossession: proofOfPossession) { success, error in
+        implementation.connect(deviceName: deviceName, proofOfPossession: proofOfPossession) { success, error, cause in
             if let error = error {
-                call.reject(error.message)
+                if let cause = cause {
+                    call.reject(error.message, "conect-error-1", cause)
+                }else{
+                    call.reject(error.message)
+                }
                 return
             }
             call.resolve(["connected": success])

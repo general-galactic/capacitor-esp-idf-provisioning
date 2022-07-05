@@ -7,7 +7,7 @@ enum ESPProvisioningError: Error {
     case missingRequiredField(_ missingFieldName: String)
     case libraryError(_ errorMessage: String, errorCode: Int? )
     case deviceNotFound(_ deviceName: String)
-    case failedToConnect(_ deviceName: String)
+    case failedToConnect(_ deviceName: String, _ error: Error?)
     case disconnected(_ deviceName: String)
     case unableToConvertStringToData
     case unableToConvertDataToString
@@ -22,8 +22,8 @@ extension ESPProvisioningError: LocalizedError {
             return NSLocalizedString("\(errorMessage) [\(errorCode ?? 0)]", comment: "ESPProvisioning error")
         case .deviceNotFound(let deviceName):
             return NSLocalizedString("Device not found: \(deviceName)", comment: "Device not found error")
-        case .failedToConnect(let deviceName):
-            return NSLocalizedString("Failed to connect to device: \(deviceName)", comment: "Failed to connect to device error")
+        case .failedToConnect(let deviceName, let error):
+            return NSLocalizedString("Failed to connect to device: \(deviceName) \(String(describing: error))", comment: "Failed to connect to device")
         case .disconnected(let deviceName):
             return NSLocalizedString("Device disconnected: \(deviceName)", comment: "Device disconnected error")
         case .unableToConvertStringToData:
@@ -50,10 +50,13 @@ class ConnectionDelegate: ESPDeviceConnectionDelegate {
 }
 
 
-public class EspProvisioningBLE: NSObject {
+public class EspProvisioningBLE: NSObject, ESPBLEDelegate {
 
+    private let plugin: CAPPlugin
     private var deviceMap = [String: ESPDevice]()
     private var loggingEnabled = false
+    
+    private var connectedDevice: ESPDevice?
 
     private lazy var centralManager: CBCentralManager = {
         return CBCentralManager.init()
@@ -70,6 +73,10 @@ public class EspProvisioningBLE: NSObject {
         get {
             return self.centralManager.authorization
         }
+    }
+    
+    init(plugin: CAPPlugin){
+        self.plugin = plugin
     }
 
     public func checkPermissions() -> [String:String] {
@@ -164,11 +171,34 @@ public class EspProvisioningBLE: NSObject {
             completionHandler(devices, nil)
         }
     }
+    
+    func setConnectedDevice(_ newDevice: ESPDevice?){
+        if let lastDevice = self.connectedDevice {
+            if let newDevice = newDevice {
+                if( newDevice.name == lastDevice.name ){
+                    return // do nothing since nothing is changing
+                }
+            }
+            
+            lastDevice.bleDelegate = nil
+            lastDevice.disconnect()
+            self.connectedDevice = nil
+        }
+        
+        if let newDevice = newDevice {
+            self.connectedDevice = newDevice
+            self.connectedDevice?.bleDelegate = self
+            self.debug("Connected to device: \(newDevice.name)")
+        }else{
+            self.connectedDevice = nil
+            self.debug("Cleared connected device")
+        }
+    }
 
     // TODO: Proof of Possession
-    func connect(deviceName: String, proofOfPossession: String, completionHandler: @escaping (Bool, ESPProvisioningError?) -> Void) -> Void {
+    func connect(deviceName: String, proofOfPossession: String, completionHandler: @escaping (Bool, ESPProvisioningError?, Error?) -> Void) -> Void {
         guard let device = self.deviceMap[deviceName] else {
-            return completionHandler(false, ESPProvisioningError.deviceNotFound(deviceName))
+            return completionHandler(false, ESPProvisioningError.deviceNotFound(deviceName), nil)
         }
 
         self.debug("Connecting to device: \(deviceName) \(proofOfPossession)")
@@ -176,12 +206,13 @@ public class EspProvisioningBLE: NSObject {
         device.connect(delegate: ConnectionDelegate(proofOfPossesion: proofOfPossession)) { status in
             switch status {
             case .connected:
-                self.debug("Connected to device: \(deviceName)")
-                return completionHandler(true, nil)
-            case .failedToConnect(_):
-                return completionHandler(false, ESPProvisioningError.failedToConnect(deviceName))
+                self.setConnectedDevice(device)
+                return completionHandler(true, nil, nil)
+            case .failedToConnect(let error):
+                self.debug("Failed to connect to device: deviceName=\(deviceName) code=\(error.code) localizedDescription=\(error.localizedDescription)")
+                return completionHandler(false, ESPProvisioningError.failedToConnect(deviceName, error), error)
             case .disconnected:
-                return completionHandler(false, ESPProvisioningError.disconnected(deviceName))
+                return completionHandler(false, ESPProvisioningError.disconnected(deviceName), nil)
             }
         }
     }
@@ -262,9 +293,33 @@ public class EspProvisioningBLE: NSObject {
             return completionHandler(false, ESPProvisioningError.deviceNotFound(deviceName))
         }
 
-        device.disconnect()
         self.deviceMap = [:]
+        self.setConnectedDevice(nil)
+        device.disconnect()
         completionHandler(true, nil)
+    }
+    
+    // MARK: ESPBLEDelegate
+    
+    public func peripheralConnected() {
+        self.debug("Connected to device")
+    }
+    
+    public func peripheralDisconnected(peripheral: CBPeripheral, error: Error?) {
+        self.debug("Device disconnected \(String(describing: error?.localizedDescription))")
+        
+        var data = ["peripheralName": peripheral.name ?? "unknown"]
+        if let lastDevice = self.connectedDevice {
+            data["deviceName"] = lastDevice.name
+        }
+        self.setConnectedDevice(nil)
+        
+        self.plugin.notifyListeners("deviceDisconnected", data: data)
+    }
+    
+    public func peripheralFailedToConnect(peripheral: CBPeripheral?, error: Error?) {
+        self.setConnectedDevice(nil)
+        self.debug("Failed to connect to device: \(String(describing: peripheral?.name))")
     }
 
 }

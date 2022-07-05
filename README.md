@@ -27,7 +27,7 @@ allprojects {
 }
 ```
 
-## Troublshooting
+## Troubleshooting
 
 **`Android build won't run after adding the npm dependency`**
 You need to add the `https://jitpack.io` repository to your `build.gradle`. See 'Initial Integration into an Android App' above.
