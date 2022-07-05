@@ -1,4 +1,5 @@
 import type { PermissionState } from '@capacitor/core';
+import type { Plugin } from '@capacitor/core/types/definitions';
 
 export enum ESPTransport {
   ble = 'ble',
@@ -34,7 +35,7 @@ export interface PermissionStatus {
   location: PermissionState;
 }
 
-export interface EspProvisioningPlugin {
+export interface EspProvisioningPlugin extends Plugin {
 
   /**
    * Check the status of system permissions:
