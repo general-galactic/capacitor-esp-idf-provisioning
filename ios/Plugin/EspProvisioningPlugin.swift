@@ -11,7 +11,7 @@ import CoreBluetooth
 @objc(EspProvisioningPlugin)
 public class EspProvisioningPlugin: CAPPlugin {
     
-    private let implementation = EspProvisioningBLE(self)
+    private lazy var implementation = EspProvisioningBLE(self)
    
     @objc override public func checkPermissions(_ call: CAPPluginCall) {
         let result = implementation.checkPermissions()
