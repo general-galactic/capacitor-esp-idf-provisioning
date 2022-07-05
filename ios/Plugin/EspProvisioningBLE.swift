@@ -75,7 +75,7 @@ public class EspProvisioningBLE: NSObject, ESPBLEDelegate {
         }
     }
     
-    init(plugin: CAPPlugin){
+    init(_ plugin: CAPPlugin){
         self.plugin = plugin
     }
 
