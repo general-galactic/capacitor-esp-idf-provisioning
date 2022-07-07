@@ -307,7 +307,8 @@ public class EspProvisioningBLE: NSObject, ESPBLEDelegate {
     
     public func peripheralDisconnected(peripheral: CBPeripheral, error: Error?) {
         self.debug("Device disconnected \(String(describing: error?.localizedDescription))")
-        
+
+        // TODO: ensure disconnecting device is the connected device
         var data = ["peripheralName": peripheral.name ?? "unknown"]
         if let lastDevice = self.connectedDevice {
             data["deviceName"] = lastDevice.name
@@ -318,6 +319,7 @@ public class EspProvisioningBLE: NSObject, ESPBLEDelegate {
     }
     
     public func peripheralFailedToConnect(peripheral: CBPeripheral?, error: Error?) {
+        // TODO: ensure disconnecting device is the connected device
         self.setConnectedDevice(nil)
         self.debug("Failed to connect to device: \(String(describing: peripheral?.name))")
     }

@@ -70,7 +70,7 @@ public class EspProvisioningPlugin: CAPPlugin {
         implementation.connect(deviceName: deviceName, proofOfPossession: proofOfPossession) { success, error, cause in
             if let error = error {
                 if let cause = cause {
-                    call.reject(error.message, "conect-error-1", cause)
+                    call.reject(error.message, "connect-error-1", cause)
                 }else{
                     call.reject(error.message)
                 }
