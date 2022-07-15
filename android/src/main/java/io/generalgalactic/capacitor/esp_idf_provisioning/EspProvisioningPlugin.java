@@ -44,13 +44,13 @@ class EventCallback {
                 )
         }
 )
-public class EspProvisioningPlugin extends Plugin {
+public class EspProvisioningPlugin extends Plugin implements UnexpectedDisconnectionListener {
 
     private EspProvisioningBLE implementation;
 
     @Override
     public void load() {
-        implementation = new EspProvisioningBLE(this.getBridge());
+        implementation = new EspProvisioningBLE(this.getBridge(), this);
     }
 
     @PluginMethod
@@ -150,11 +150,6 @@ public class EspProvisioningPlugin extends Plugin {
             @Override
             public void connectionTimedOut() {
                 call.reject("Connection timed out: " + deviceName);
-            }
-
-            @Override
-            public void disconnected() {
-                call.reject("Device disconnected: " + deviceName);
             }
 
             @Override
@@ -332,4 +327,10 @@ public class EspProvisioningPlugin extends Plugin {
         }
     }
 
+    @Override
+    public void deviceDisconnectedUnexpectedly(String deviceName) {
+        JSObject ret = new JSObject();
+        ret.put("deviceName", deviceName);
+        this.notifyListeners("deviceDisconnected", ret);
+    }
 }
