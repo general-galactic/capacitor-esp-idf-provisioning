@@ -10,8 +10,6 @@ public interface ConnectListener {
 
     public void connectionTimedOut();
 
-    public void disconnected();
-
     public void connectionFailed();
 
 }
