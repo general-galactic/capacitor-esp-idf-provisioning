@@ -163,13 +163,16 @@ public class EspProvisioningBLE {
             return;
         }
 
+        long connectTimeout = this.DEVICE_CONNECT_TIMEOUT;
+
         Runnable connectionTimeoutTask = new Runnable() {
 
             @Override
             public void run() {
-                errorLog(new Error("Timed out trying to connect to device: " + deviceName));
+                debugLog("Capacitor ESP connect timeout");
+                errorLog(new Error(String.format("Timed out after %s seconds while trying to connect to device: %s", connectTimeout, deviceName)));
                 listener.connectionTimedOut();
-                // EventBus.getDefault().unregister(connectionHandler); // TODO: cleanup
+                EventBus.getDefault().unregister(connectionHandler);
             }
 
         };
@@ -178,34 +181,36 @@ public class EspProvisioningBLE {
 
             @Subscribe(threadMode = ThreadMode.MAIN)
             public void onEvent(DeviceConnectionEvent event) {
+            debugLog(String.format("ESP Connection handler callback: %s",event.getEventType()));
 
-                debugLog("Connection handler callback: " + event.getEventType());
+            handler.removeCallbacks(connectionTimeoutTask); // Cancels connection timeout task
+            EventBus.getDefault().unregister(this);
 
-                handler.removeCallbacks(connectionTimeoutTask); // Cancels connection timeout task
-                EventBus.getDefault().unregister(this);
+            switch (event.getEventType()) {
 
-                switch (event.getEventType()) {
+                case ESPConstants.EVENT_DEVICE_CONNECTED:
+                    debugLog("Device connected event received");
+                    provisionManager.getEspDevice().setProofOfPossession(proofOfPossession);
+                    listener.connected(provisionManager.getEspDevice());
+                    break;
 
-                    case ESPConstants.EVENT_DEVICE_CONNECTED:
-                        debugLog("Device Connected Event Received");
-                        provisionManager.getEspDevice().setProofOfPossession(proofOfPossession);
-                        listener.connected(provisionManager.getEspDevice());
-                        break;
+                case ESPConstants.EVENT_DEVICE_DISCONNECTED:
+                    debugLog("Device disconnected event received");
+                    listener.disconnected();
+                    break;
 
-                    case ESPConstants.EVENT_DEVICE_DISCONNECTED:
-                        listener.disconnected();
-                        break;
-
-                    case ESPConstants.EVENT_DEVICE_CONNECTION_FAILED:
-                        listener.connectionFailed();
-                        break;
-                }
+                case ESPConstants.EVENT_DEVICE_CONNECTION_FAILED:
+                    debugLog("Device connection failed event received");
+                    listener.connectionFailed();
+                    break;
+            }
             }
         };
 
         EventBus.getDefault().register(connectionHandler);
 
         ESPDevice espDevice = this.getESPProvisionManager().createESPDevice(transport, security);
+        debugLog(String.format("Connecting:. %s, %s, %s", espDevice.getDeviceName(), bleDevice.getName(), bleDevice.getServiceUUID()));
 
         espDevice.connectBLEDevice(bleDevice.getBluetoothDevice(), bleDevice.getServiceUUID());
 
