@@ -397,12 +397,13 @@ public class EspProvisioningBLE {
 
     public void disconnect(String deviceName, DisconnectListener listener) {
         this.stopListeningForDisconnection();
-        this.devices = new HashMap<String, DiscoveredBluetoothDevice>();
 
         ESPDevice espDevice = this.getESPDevice(deviceName, listener);
-        if(espDevice != null) espDevice.disconnectDevice();
+        if (espDevice != null) espDevice.disconnectDevice();
 
         if (listener != null ) listener.deviceDisconnected();
+
+        this.devices = new HashMap<String, DiscoveredBluetoothDevice>();
     }
 
     private void debugLog(String message){
