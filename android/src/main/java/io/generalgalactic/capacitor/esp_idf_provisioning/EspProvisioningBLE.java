@@ -180,7 +180,7 @@ public class EspProvisioningBLE {
 
         DiscoveredBluetoothDevice bleDevice = this.devices.get(deviceName);
         if(bleDevice == null) {
-            listener.deviceNotFound();
+            listener.deviceNotFound(deviceName);
             return;
         }
 
@@ -295,13 +295,16 @@ public class EspProvisioningBLE {
 
     public void provision(String deviceName, String ssid, String passPhrase, WifiProvisionListener listener) {
         ESPDevice espDevice = this.getESPDevice(deviceName, listener);
-        if(espDevice == null) return;
+        if (espDevice == null) {
+            listener.deviceNotFound(deviceName);
+            return;
+        }
 
         espDevice.provision(ssid, passPhrase, new ProvisionListener() {
 
             @Override
             public void createSessionFailed(Exception e) {
-                Error createSessionError = new Error("Provisioning Failed. Couldn't create a session.", e);
+                Error createSessionError = new Error("Couldn't create a secure session", e);
                 errorLog(createSessionError);
                 listener.provisioningFailed(createSessionError);
             }
@@ -313,7 +316,7 @@ public class EspProvisioningBLE {
 
             @Override
             public void wifiConfigFailed(Exception e) {
-                Error wifiConfigFailedError = new Error("Provisioning Failed. Failed to send WiFi config.", e);
+                Error wifiConfigFailedError = new Error("Failed to send WiFi config", e);
                 errorLog(wifiConfigFailedError);
                 listener.provisioningFailed(wifiConfigFailedError);
             }
@@ -325,7 +328,7 @@ public class EspProvisioningBLE {
 
             @Override
             public void wifiConfigApplyFailed(Exception e) {
-                Error wifiConfigApplyError = new Error("Provisioning Failed. Failed to apply WiFi config.", e);
+                Error wifiConfigApplyError = new Error("Failed to apply WiFi config", e);
                 errorLog(wifiConfigApplyError);
                 listener.provisioningFailed(wifiConfigApplyError);
             }
@@ -334,23 +337,23 @@ public class EspProvisioningBLE {
             public void provisioningFailedFromDevice(final ESPConstants.ProvisionFailureReason failureReason) {
                 switch (failureReason) {
                     case AUTH_FAILED:
-                        Error authFailedError = new Error("Provisioning Failed. Authentication failed.");
+                        Error authFailedError = new Error("WiFi credential error. Please check your SSID and password and try again");
                         errorLog(authFailedError);
                         listener.provisioningFailed(authFailedError);
                         break;
                     case DEVICE_DISCONNECTED:
-                        Error deviceDisconnectedError = new Error("Provisioning Failed. Device Disconnected.");
+                        Error deviceDisconnectedError = new Error("Device Disconnected unexpectedly");
                         errorLog(deviceDisconnectedError);
                         listener.provisioningFailed(deviceDisconnectedError);
                         break;
                     case NETWORK_NOT_FOUND:
-                        Error networkNotFoundError = new Error(String.format("Provisioning Failed. Network[%s] Not Found.", ssid));
+                        Error networkNotFoundError = new Error(String.format("WiFi network not found", ssid));
                         errorLog(networkNotFoundError);
                         listener.provisioningFailed(networkNotFoundError);
                         break;
                     case UNKNOWN:
                     default:
-                        Error unknownError = new Error("Provisioning Failed. Unknown Error.");
+                        Error unknownError = new Error("Unknown Error");
                         errorLog(unknownError);
                         listener.provisioningFailed(unknownError);
                 }
@@ -387,7 +390,7 @@ public class EspProvisioningBLE {
 
             @Override
             public void onFailure(Exception e) {
-                Error sendCustomDataStringError = new Error("Error sending custom data string: " + e.getMessage());
+                Error sendCustomDataStringError = new Error("Error sending custom data string: " + e.getMessage(), e);
                 errorLog(sendCustomDataStringError);
                 listener.failedToSendCustomDataString(sendCustomDataStringError);
             }

@@ -143,7 +143,7 @@ public class EspProvisioningPlugin extends Plugin implements UnexpectedDisconnec
             }
 
             @Override
-            public void deviceNotFound() {
+            public void deviceNotFound(String deviceName) {
                 call.reject("Device not found: " + deviceName);
             }
 
