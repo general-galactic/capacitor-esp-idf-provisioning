@@ -44,7 +44,7 @@ class EventCallback {
                 )
         }
 )
-public class EspProvisioningPlugin extends Plugin implements UnexpectedDisconnectionListener {
+public class EspProvisioningPlugin extends Plugin implements EspProvisioningEventListener {
 
     private EspProvisioningBLE implementation;
 
@@ -55,10 +55,14 @@ public class EspProvisioningPlugin extends Plugin implements UnexpectedDisconnec
 
     @PluginMethod
     public void checkPermissions(PluginCall call) {
+        call.resolve(this.getPermissions());
+    }
+
+    private JSObject getPermissions(){
         JSObject ret = new JSObject();
         ret.put("location", this.getPermissionState("location").toString());
         ret.put("ble", this.getPermissionState("ble").toString());
-        call.resolve(ret);
+        return ret;
     }
 
     @PluginMethod
@@ -81,11 +85,13 @@ public class EspProvisioningPlugin extends Plugin implements UnexpectedDisconnec
     @PermissionCallback()
     private void blePermissionCallback(PluginCall call) {
         Log.d("capacitor-esp-provision", String.format("Requested ble permissions: hasBLEHardware=%b; blePermissionGranted=%b;", this.implementation.hasBLEHardware(), this.blePermissionGranted()));
+        call.resolve(this.getPermissions());
     }
 
     @PermissionCallback()
     private void locationPermissionCallback(PluginCall call) {
         Log.d("capacitor-esp-provision", String.format("Requested location permissions: locationPermissionGranted=%b;", this.locationPermissionGranted()));
+        call.resolve(this.getPermissions());
     }
 
     private boolean blePermissionGranted(){
@@ -333,4 +339,10 @@ public class EspProvisioningPlugin extends Plugin implements UnexpectedDisconnec
         ret.put("deviceName", deviceName);
         this.notifyListeners("deviceDisconnected", ret);
     }
+
+    @Override
+    public void bluetoothStateChange(int state) {
+        this.notifyListeners("permissionUpdate", this.getPermissions());
+    }
+
 }

@@ -6,7 +6,10 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.ScanResult;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.util.Log;
@@ -46,15 +49,32 @@ public class EspProvisioningBLE {
     private boolean loggingEnabled = false;
     private EventCallback disconnectionHandler;
     private String currentDeviceName;
+    private BroadcastReceiver broadcastReceiver;
 
     private static final long DEVICE_CONNECT_TIMEOUT = 20000;
 
-    public EspProvisioningBLE(Bridge bridge, UnexpectedDisconnectionListener unexpectedDisconnectionListener){
+    public EspProvisioningBLE(Bridge bridge, EspProvisioningEventListener eventListener){
         this.bridge = bridge;
 
         EspProvisioningBLE self = this;
 
-        // This listens for random device disconnections and will end up sending an out-of-band event to the capactior plugin
+        this.broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                final String action = intent.getAction();
+
+                if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+                    final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
+                    debugLog(String.format("Bluetooth state change: %d", state));
+                    eventListener.bluetoothStateChange(state);
+                }
+            }
+        };
+
+        IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+        bridge.getActivity().registerReceiver(broadcastReceiver, filter);
+
+        // This listens for random device disconnections and will end up sending an out-of-band event to the capacitor plugin
         this.disconnectionHandler = new EventCallback(){
             @Subscribe(threadMode = ThreadMode.MAIN)
             public void onEvent(DeviceConnectionEvent event) {
@@ -67,7 +87,7 @@ public class EspProvisioningBLE {
                     self.disconnect(deviceName, null);
 
                     // Now notify up 1 level so a capacitor event can be sent
-                    unexpectedDisconnectionListener.deviceDisconnectedUnexpectedly(deviceName);
+                    eventListener.deviceDisconnectedUnexpectedly(deviceName);
                 }
             }
         };

@@ -50,8 +50,8 @@ class ConnectionDelegate: ESPDeviceConnectionDelegate {
 }
 
 
-public class EspProvisioningBLE: NSObject, ESPBLEDelegate {
-
+public class EspProvisioningBLE: NSObject, ESPBLEDelegate, CBCentralManagerDelegate {
+ 
     private let plugin: CAPPlugin
     private var deviceMap = [String: ESPDevice]()
     private var loggingEnabled = false
@@ -59,7 +59,9 @@ public class EspProvisioningBLE: NSObject, ESPBLEDelegate {
     private var connectedDevice: ESPDevice?
 
     private lazy var centralManager: CBCentralManager = {
-        return CBCentralManager.init()
+        let manager = CBCentralManager.init()
+        manager.delegate = self
+        return manager
     }()
 
     private var centralManagerState: CBManagerState {
@@ -78,7 +80,12 @@ public class EspProvisioningBLE: NSObject, ESPBLEDelegate {
     init(_ plugin: CAPPlugin){
         self.plugin = plugin
     }
-
+    
+    public func centralManagerDidUpdateState(_ central: CBCentralManager) {
+        self.debug("PERMISSION STATE CHANGE")
+        self.plugin.notifyListeners("permissionUpdate", data: self.checkPermissions())
+    }
+    
     public func checkPermissions() -> [String:String] {
         var bluetoothState: String
 
