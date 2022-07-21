@@ -218,7 +218,7 @@ public class EspProvisioningBLE {
             @Override
             public void onFailure(Exception e) {
                 String message = e.getMessage();
-                if (message.indexOf("statusCode=2") > -1) {
+                if (message.indexOf("errorCode=2") > -1) {
                     // statusCode=2 means that the nearby devices permission is not allowed in the device app settings
                     // For some reason this can be true and all the permissions checks coded here are valid
                     // Deciding to map this error here so the UI can at least response with a useful message
