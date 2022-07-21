@@ -172,7 +172,7 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
 
             @Override
             public void blePermissionsIssue() {
-                call.reject("Bluetooth (Nearby Devices) and Location permissions are required");
+                call.reject("Bluetooth (Nearby Devices) and Location permissions are required", "PERMISSIONS_ISSUE");
             }
 
         });
