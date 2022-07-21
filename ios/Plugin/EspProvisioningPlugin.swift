@@ -13,14 +13,19 @@ public class EspProvisioningPlugin: CAPPlugin {
     
     private lazy var implementation = EspProvisioningBLE(self)
    
+    @objc public func checkStatus(_ call: CAPPluginCall) {
+        let result = implementation.checkStatus().toDict()
+        call.resolve(result)
+    }
+    
     @objc override public func checkPermissions(_ call: CAPPluginCall) {
         let result = implementation.checkPermissions()
-        call.resolve(result)
+        call.resolve(result.toDict())
     }
 
     @objc override public func requestPermissions(_ call: CAPPluginCall) {
         let result = implementation.requestPermissions()
-        call.resolve(result)
+        call.resolve(result.toDict())
     }
     
     @objc func enableLogging(_ call: CAPPluginCall) {

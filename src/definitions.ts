@@ -35,6 +35,17 @@ export interface PermissionStatus {
   location: PermissionState;
 }
 
+export interface EspProvisioningStatus {
+  ble: {
+    supported: boolean,
+    allowed: boolean,
+    poweredOn: boolean
+  },
+  location: {
+    allowed: boolean
+  }
+}
+
 export interface EspProvisioningPlugin extends Plugin {
 
   /**
@@ -48,6 +59,11 @@ export interface EspProvisioningPlugin extends Plugin {
    * Have the system prompt the user for access to the proper permissions - Android only.
    */
   requestPermissions(): Promise<PermissionStatus>;
+
+  /**
+   * See if the bluetooth adapter is up and running
+   */
+  checkStatus(): Promise<EspProvisioningStatus>;
 
   /**
    * Perform a BLE scan to find devices that are connection with the given devicePrefix. The transport and security

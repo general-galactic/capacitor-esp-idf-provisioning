@@ -49,6 +49,70 @@ class ConnectionDelegate: ESPDeviceConnectionDelegate {
 
 }
 
+public enum CapacitorPermissionStatus : String {
+    case granted = "granted"
+    case denied = "denied"
+    case prompt = "prompt"
+}
+
+public class EspProvisioningPermissionsStatus {
+    
+    let ble: CapacitorPermissionStatus
+    let location: CapacitorPermissionStatus = CapacitorPermissionStatus.granted // Android requires location permissions, we just lie on iOS to conform
+    
+    init(ble: CapacitorPermissionStatus) {
+        self.ble = ble
+    }
+    
+    public func toDict() -> [String:String] {
+        [
+            "ble": self.ble.rawValue,
+            "location": self.location.rawValue
+        ]
+    }
+    
+}
+
+public class EspProvisioningBluetoothStatus {
+    
+    let supported: Bool
+    let allowed: Bool
+    let poweredOn: Bool
+    
+    init(supported: Bool, allowed: Bool, poweredOn: Bool) {
+        self.supported = supported
+        self.allowed = allowed
+        self.poweredOn = poweredOn
+    }
+
+    public func toDict() -> [String: Bool] {
+        return [
+            "supported": self.supported,
+            "allowed": self.allowed,
+            "poweredOn": self.poweredOn
+        ]
+    }
+    
+}
+
+public class EspProvisioningStatus {
+    
+    let ble: EspProvisioningBluetoothStatus
+    
+    init(ble: EspProvisioningBluetoothStatus) {
+        self.ble = ble
+    }
+
+    public func toDict() -> [String: Any] {
+        return [
+            "ble": self.ble.toDict(),
+            "location": [
+                "allowed": true // adding this to have it match the android signature
+            ]
+        ]
+    }
+    
+}
 
 public class EspProvisioningBLE: NSObject, ESPBLEDelegate, CBCentralManagerDelegate {
  
@@ -82,54 +146,62 @@ public class EspProvisioningBLE: NSObject, ESPBLEDelegate, CBCentralManagerDeleg
     }
     
     public func centralManagerDidUpdateState(_ central: CBCentralManager) {
-        self.debug("PERMISSION STATE CHANGE")
-        self.plugin.notifyListeners("permissionUpdate", data: self.checkPermissions())
+        self.plugin.notifyListeners("statusUpdate", data: self.checkStatus().toDict())
     }
-    
-    public func checkPermissions() -> [String:String] {
-        var bluetoothState: String
+
+    public func checkStatus() -> EspProvisioningStatus {
+        let permissions = self.gatherPermissions()
+        let supported = self.centralManagerState != CBManagerState.unsupported
+        let poweredOn = self.centralManagerState == CBManagerState.poweredOn || self.centralManagerState == CBManagerState.resetting
+        let ble = EspProvisioningBluetoothStatus(supported: supported, allowed: permissions.ble == CapacitorPermissionStatus.granted, poweredOn: poweredOn)
+        
+        return EspProvisioningStatus(ble: ble)
+    }
+                                                 
+    private func gatherPermissions() -> EspProvisioningPermissionsStatus {
+        var bluetoothState: CapacitorPermissionStatus
 
         // Allowed values defined by PermissionState from capacitor: 'prompt' | 'prompt-with-rationale' | 'granted' | 'denied'
         switch self.centralManagerState {
-        case .poweredOn:
-            if #available(iOS 13.0, *) {
-                switch self.centralManagerAuthorizationState {
-                case .allowedAlways:
-                    bluetoothState = "granted"
-                case .restricted:
-                    bluetoothState = "granted"
-                case .denied:
-                    bluetoothState = "denied"
-                case .notDetermined:
-                    bluetoothState = "prmompt"
-                @unknown default:
-                    bluetoothState = "denied"
+            case .poweredOn:
+                if #available(iOS 13.0, *) {
+                    switch self.centralManagerAuthorizationState {
+                    case .allowedAlways:
+                        bluetoothState = .granted
+                    case .restricted:
+                        bluetoothState = .granted
+                    case .denied:
+                        bluetoothState = .denied
+                    case .notDetermined:
+                        bluetoothState = .prompt
+                    @unknown default:
+                        bluetoothState = .denied
+                    }
+                } else {
+                    bluetoothState = .granted
                 }
-            } else {
-                // TODO: is this right?
-                bluetoothState = "granted"
-            }
-        case .poweredOff:
-            bluetoothState = "prompt"
-        case .unauthorized:
-            bluetoothState = "denied"
-        case .resetting:
-            bluetoothState = "granted" // TODO: is this right?
-        case .unknown, .unsupported:
-            bluetoothState = "denied"
-        @unknown default:
-            bluetoothState = "denied"
+            case .poweredOff:
+                bluetoothState = .prompt
+            case .unauthorized:
+                bluetoothState = .denied
+            case .resetting:
+                bluetoothState = .granted // TODO: is this right?
+            case .unknown, .unsupported:
+                bluetoothState = .denied
+            @unknown default:
+                bluetoothState = .denied
         }
 
-        return [
-            "ble": bluetoothState,
-            "location": "granted" // Android requires location permissions, we just lie on iOS
-        ]
+        return EspProvisioningPermissionsStatus(ble: bluetoothState)
+    }
+    
+    public func checkPermissions() -> EspProvisioningPermissionsStatus {
+        return self.gatherPermissions()
     }
 
-    public func requestPermissions() -> [String:String] {
-        // TODO: should this even be implemented?
-        return self.checkPermissions()
+    public func requestPermissions() -> EspProvisioningPermissionsStatus {
+        // TODO: should this even be implemented on iOS?
+        return self.gatherPermissions()
     }
     
     func enableLogging() -> Void {

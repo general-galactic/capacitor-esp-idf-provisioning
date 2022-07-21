@@ -17,4 +17,5 @@ CAP_PLUGIN(EspProvisioningPlugin, "EspProvisioning",
     CAP_PLUGIN_METHOD(checkPermissions, CAPPluginReturnPromise);
     CAP_PLUGIN_METHOD(requestPermissions, CAPPluginReturnPromise);
     CAP_PLUGIN_METHOD(sendCustomDataString, CAPPluginReturnPromise);
+    CAP_PLUGIN_METHOD(checkStatus, CAPPluginReturnPromise);
 )

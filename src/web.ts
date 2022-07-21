@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { WebPlugin } from '@capacitor/core';
 
-import type { ESPDevice, ESPNetwork, EspProvisioningPlugin, ESPSecurity, ESPTransport, PermissionStatus } from './definitions';
+import type { EspProvisioningStatus, ESPDevice, ESPNetwork, EspProvisioningPlugin, ESPSecurity, ESPTransport, PermissionStatus } from './definitions';
 
 export class EspProvisioningWeb extends WebPlugin implements EspProvisioningPlugin {
 
@@ -12,6 +12,10 @@ export class EspProvisioningWeb extends WebPlugin implements EspProvisioningPlug
   }
 
   requestPermissions(): Promise<PermissionStatus> {
+    throw new Error('Method not implemented.');
+  }
+
+  checkStatus(): Promise<EspProvisioningStatus> {
     throw new Error('Method not implemented.');
   }
 

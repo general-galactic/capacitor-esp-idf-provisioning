@@ -26,6 +26,7 @@ import com.espressif.provisioning.listeners.ProvisionListener;
 import com.espressif.provisioning.listeners.ResponseListener;
 import com.espressif.provisioning.listeners.WiFiScanListener;
 import com.getcapacitor.Bridge;
+import com.getcapacitor.PermissionState;
 import com.getcapacitor.PluginMethod;
 
 import org.greenrobot.eventbus.EventBus;
@@ -119,22 +120,19 @@ public class EspProvisioningBLE {
         return this.bridge.getContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
     }
 
-    public boolean assertBluetoothAdapter() {
-        if(!this.hasBLEHardware()){
-            throw new Error("This device does not support BLE.");
-        }
+    public boolean bleIsEnabled(){
+        if(!this.hasBLEHardware()) return false;
 
         BluetoothManager manager = (BluetoothManager) this.bridge.getActivity().getSystemService(Context.BLUETOOTH_SERVICE);
         BluetoothAdapter adapter = manager.getAdapter();
 
-        if (adapter == null) {
-            throw new Error("Unable to access BLE device.");
-        }
+        if (adapter == null) return false; // Unable to access? Does this really happen?
+        return adapter.isEnabled();
+    }
 
-        if (!adapter.isEnabled()){
-            throw new Error("Device BLE is disabled.");
-        }
-
+    public boolean assertBluetoothAdapter() {
+        if(!this.hasBLEHardware()) throw new Error("This device does not support BLE.");
+        if(!this.bleIsEnabled()) throw new Error("Device BLE is disabled.");
         return true;
     }
 

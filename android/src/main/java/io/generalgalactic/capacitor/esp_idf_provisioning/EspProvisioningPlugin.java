@@ -58,40 +58,46 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
         call.resolve(this.getPermissions());
     }
 
+    @PluginMethod
+    public void requestPermissions(PluginCall call) {
+        boolean needsRequest = false;
+        if(this.implementation.hasBLEHardware() && !this.blePermissionGranted()){
+            needsRequest = true;
+        }
+
+        if(!this.locationPermissionGranted()){
+            needsRequest = true;
+        }
+
+        if(needsRequest){
+            requestAllPermissions(call, "permissionsCallback");
+        }else{
+            this.permissionsCallback(call);
+        }
+    }
+
+    @PermissionCallback()
+    private void permissionsCallback(PluginCall call) {
+        Log.d("capacitor-esp-provision", String.format("Requested ble permissions: hasBLEHardware=%b; blePermissionGranted=%b;", this.implementation.hasBLEHardware(), this.blePermissionGranted()));
+
+        if(this.implementation.hasBLEHardware() && !this.blePermissionGranted()){
+            call.reject("BLE is required");
+            return;
+        }
+
+        if(!this.locationPermissionGranted()){
+            call.reject("Location access is required to use BLE");
+            return;
+        }
+
+        call.resolve(this.getPermissions());
+    }
+
     private JSObject getPermissions(){
         JSObject ret = new JSObject();
         ret.put("location", this.getPermissionState("location").toString());
         ret.put("ble", this.getPermissionState("ble").toString());
         return ret;
-    }
-
-    @PluginMethod
-    public void requestPermissions(PluginCall call) {
-        if(this.implementation.hasBLEHardware() && !this.blePermissionGranted()){
-            this.requestPermissionForAlias("ble", call, "blePermissionCallback");
-        }else{
-            this.blePermissionCallback(call);
-        }
-
-        if(!this.locationPermissionGranted()){
-            this.requestPermissionForAlias("location", call, "locationPermissionCallback");
-        }else{
-            this.locationPermissionCallback(call);
-        }
-
-        this.checkPermissions(call);
-    }
-
-    @PermissionCallback()
-    private void blePermissionCallback(PluginCall call) {
-        Log.d("capacitor-esp-provision", String.format("Requested ble permissions: hasBLEHardware=%b; blePermissionGranted=%b;", this.implementation.hasBLEHardware(), this.blePermissionGranted()));
-        call.resolve(this.getPermissions());
-    }
-
-    @PermissionCallback()
-    private void locationPermissionCallback(PluginCall call) {
-        Log.d("capacitor-esp-provision", String.format("Requested location permissions: locationPermissionGranted=%b;", this.locationPermissionGranted()));
-        call.resolve(this.getPermissions());
     }
 
     private boolean blePermissionGranted(){
@@ -100,6 +106,27 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
 
     private boolean locationPermissionGranted(){
         return this.getPermissionState("location") == PermissionState.GRANTED;
+    }
+
+    @PluginMethod
+    public void checkStatus(PluginCall call) {
+        call.resolve(this.buildStatus());
+    }
+
+    private JSObject buildStatus(){
+        JSObject location = new JSObject();
+        location.put("allowed", this.locationPermissionGranted());
+
+        JSObject ble = new JSObject();
+        ble.put("supported", this.implementation.hasBLEHardware());
+        ble.put("allowed", this.blePermissionGranted());
+        ble.put("poweredOn", this.implementation.bleIsEnabled());
+
+        JSObject ret = new JSObject();
+        ret.put("ble", ble);
+        ret.put("location", location);
+
+        return ret;
     }
 
     @PluginMethod
@@ -342,7 +369,7 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
 
     @Override
     public void bluetoothStateChange(int state) {
-        this.notifyListeners("permissionUpdate", this.getPermissions());
+        this.notifyListeners("statusUpdate", this.buildStatus());
     }
 
 }
