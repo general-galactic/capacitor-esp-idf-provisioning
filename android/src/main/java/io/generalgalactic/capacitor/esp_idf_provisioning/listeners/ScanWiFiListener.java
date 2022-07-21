@@ -1,4 +1,4 @@
-package io.generalgalactic.capacitor.esp_idf_provisioning;
+package io.generalgalactic.capacitor.esp_idf_provisioning.listeners;
 
 import com.espressif.provisioning.WiFiAccessPoint;
 

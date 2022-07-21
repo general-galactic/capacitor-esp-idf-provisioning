@@ -26,7 +26,6 @@ import com.espressif.provisioning.listeners.ProvisionListener;
 import com.espressif.provisioning.listeners.ResponseListener;
 import com.espressif.provisioning.listeners.WiFiScanListener;
 import com.getcapacitor.Bridge;
-import com.getcapacitor.PermissionState;
 import com.getcapacitor.PluginMethod;
 
 import org.greenrobot.eventbus.EventBus;
@@ -38,6 +37,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import io.generalgalactic.capacitor.esp_idf_provisioning.listeners.ConnectListener;
+import io.generalgalactic.capacitor.esp_idf_provisioning.listeners.DisconnectListener;
+import io.generalgalactic.capacitor.esp_idf_provisioning.listeners.EspProvisioningEventListener;
+import io.generalgalactic.capacitor.esp_idf_provisioning.listeners.ScanListener;
+import io.generalgalactic.capacitor.esp_idf_provisioning.listeners.ScanWiFiListener;
+import io.generalgalactic.capacitor.esp_idf_provisioning.listeners.SendCustomDataStringListener;
+import io.generalgalactic.capacitor.esp_idf_provisioning.listeners.UsesBluetooth;
+import io.generalgalactic.capacitor.esp_idf_provisioning.listeners.UsesESPDevice;
+import io.generalgalactic.capacitor.esp_idf_provisioning.listeners.WifiProvisionListener;
 
 public class EspProvisioningBLE {
 
@@ -130,16 +139,22 @@ public class EspProvisioningBLE {
         return adapter.isEnabled();
     }
 
-    public boolean assertBluetoothAdapter() {
-        if(!this.hasBLEHardware()) throw new Error("This device does not support BLE.");
-        if(!this.bleIsEnabled()) throw new Error("Device BLE is disabled.");
+    public boolean assertBluetooth(UsesBluetooth listener) {
+        if(!this.hasBLEHardware()) {
+            listener.bleNotSupported();
+            return false;
+        }
+        if(!this.bleIsEnabled()) {
+            listener.bleNotPoweredOn();
+            return false;
+        }
         return true;
     }
 
     @SuppressLint("MissingPermission")
     @PluginMethod
     public void searchESPDevices(String devicePrefix, ESPConstants.TransportType transport, ESPConstants.SecurityType security, ScanListener listener) {
-        this.assertBluetoothAdapter();
+        this.assertBluetooth(listener);
 
         if (ActivityCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Error permissionError = new Error("Not able to start scan as Location permission is not granted.");
@@ -195,6 +210,7 @@ public class EspProvisioningBLE {
     }
 
     public void connect(String deviceName, String proofOfPossession, ConnectListener listener){
+        if(!this.assertBluetooth(listener)) return;
 
         DiscoveredBluetoothDevice bleDevice = this.devices.get(deviceName);
         if(bleDevice == null) {
@@ -269,26 +285,31 @@ public class EspProvisioningBLE {
         EventBus.getDefault().unregister(this.disconnectionHandler);
     }
 
-    private ESPDevice getESPDevice(String deviceName, UsesESPDevice listener){
+    private ESPDevice getESPDevice(String deviceName){
         DiscoveredBluetoothDevice bleDevice = this.devices.get(deviceName);
-        if(bleDevice == null) {
-            if (listener != null) listener.deviceNotFound(deviceName);
-            return null;
-        }
+        if(bleDevice == null) return null;
 
         ESPDevice espDevice = this.getESPProvisionManager().getEspDevice();
-        if(espDevice == null) {
-            if (listener != null) listener.deviceNotFound(deviceName);
-            return null;
-        }
+        if(espDevice == null) return null;
 
         if( !espDevice.getDeviceName().equals(bleDevice.getName()) ){
             debugLog(String.format("Device mismatch. %s != %s", espDevice.getDeviceName(), bleDevice.getName()));
-            if (listener != null) listener.deviceNotFound(deviceName);
             return null;
         }
 
         return espDevice;
+    }
+
+    private ESPDevice getESPDevice(String deviceName, UsesESPDevice listener){
+        if (!this.assertBluetooth(listener)) return null;
+
+        ESPDevice device = this.getESPDevice(deviceName);
+
+        if (device == null && listener != null) {
+            listener.deviceNotFound(deviceName);
+        }
+
+        return device;
     }
 
     public void scanWifiList(String deviceName, ScanWiFiListener listener) {
@@ -313,10 +334,7 @@ public class EspProvisioningBLE {
 
     public void provision(String deviceName, String ssid, String passPhrase, WifiProvisionListener listener) {
         ESPDevice espDevice = this.getESPDevice(deviceName, listener);
-        if (espDevice == null) {
-            listener.deviceNotFound(deviceName);
-            return;
-        }
+        if (espDevice == null) return;
 
         espDevice.provision(ssid, passPhrase, new ProvisionListener() {
 
@@ -419,7 +437,7 @@ public class EspProvisioningBLE {
     public void disconnect(String deviceName, DisconnectListener listener) {
         this.stopListeningForDisconnection();
 
-        ESPDevice espDevice = this.getESPDevice(deviceName, listener);
+        ESPDevice espDevice = this.getESPDevice(deviceName); // don't pass listener since we don't care about deviceNotFound() for disconnection.
         if (espDevice != null) espDevice.disconnectDevice();
 
         if (listener != null ) listener.deviceDisconnected();

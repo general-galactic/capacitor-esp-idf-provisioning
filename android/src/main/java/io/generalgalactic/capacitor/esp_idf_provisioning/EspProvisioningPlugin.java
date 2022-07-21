@@ -21,6 +21,14 @@ import com.getcapacitor.annotation.PermissionCallback;
 
 import java.util.List;
 
+import io.generalgalactic.capacitor.esp_idf_provisioning.listeners.ConnectListener;
+import io.generalgalactic.capacitor.esp_idf_provisioning.listeners.DisconnectListener;
+import io.generalgalactic.capacitor.esp_idf_provisioning.listeners.EspProvisioningEventListener;
+import io.generalgalactic.capacitor.esp_idf_provisioning.listeners.ScanListener;
+import io.generalgalactic.capacitor.esp_idf_provisioning.listeners.ScanWiFiListener;
+import io.generalgalactic.capacitor.esp_idf_provisioning.listeners.SendCustomDataStringListener;
+import io.generalgalactic.capacitor.esp_idf_provisioning.listeners.WifiProvisionListener;
+
 class EventCallback {
 
 }
@@ -158,6 +166,16 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
                 call.reject(error.getMessage());
             }
 
+            @Override
+            public void bleNotPoweredOn() {
+                call.reject("Bluetooth must be enabled");
+            }
+
+            @Override
+            public void bleNotSupported() {
+                call.reject("Bluetooth is required");
+            }
+
         });
     }
 
@@ -188,6 +206,16 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
             @Override
             public void connectionFailed() {
                 call.reject("Device connection failed: " + deviceName);
+            }
+
+            @Override
+            public void bleNotPoweredOn() {
+                call.reject("Bluetooth must be enabled");
+            }
+
+            @Override
+            public void bleNotSupported() {
+                call.reject("Bluetooth is required");
             }
 
         });
@@ -223,6 +251,16 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
                 call.reject("WiFi scan failed: " + error.getMessage());
             }
 
+            @Override
+            public void bleNotPoweredOn() {
+                call.reject("Bluetooth must be enabled");
+            }
+
+            @Override
+            public void bleNotSupported() {
+                call.reject("Bluetooth is required");
+            }
+
         });
     }
 
@@ -249,6 +287,16 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
             @Override
             public void deviceNotFound(String deviceName) {
                 call.reject("Device not found: " + deviceName);
+            }
+
+            @Override
+            public void bleNotPoweredOn() {
+                call.reject("Bluetooth must be enabled");
+            }
+
+            @Override
+            public void bleNotSupported() {
+                call.reject("Bluetooth is required");
             }
 
         });
@@ -280,6 +328,16 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
                 call.reject("Device not found: " + deviceName);
             }
 
+            @Override
+            public void bleNotPoweredOn() {
+                call.reject("Bluetooth must be enabled");
+            }
+
+            @Override
+            public void bleNotSupported() {
+                call.reject("Bluetooth is required");
+            }
+
         });
     }
 
@@ -295,6 +353,16 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
             @Override
             public void deviceNotFound(String deviceName) {
                 call.reject("Device not found: " + deviceName);
+            }
+
+            @Override
+            public void bleNotPoweredOn() {
+                call.resolve();
+            }
+
+            @Override
+            public void bleNotSupported() {
+                call.reject("Bluetooth is required");
             }
         });
     }

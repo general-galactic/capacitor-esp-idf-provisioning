@@ -42,6 +42,7 @@ You need to run `npx cap sync`
 
 * [`checkPermissions()`](#checkpermissions)
 * [`requestPermissions()`](#requestpermissions)
+* [`checkStatus()`](#checkstatus)
 * [`searchESPDevices(...)`](#searchespdevices)
 * [`connect(...)`](#connect)
 * [`scanWifiList(...)`](#scanwifilist)
@@ -86,6 +87,19 @@ requestPermissions() => Promise<PermissionStatus>
 Have the system prompt the user for access to the proper permissions - Android only.
 
 **Returns:** <code>Promise&lt;<a href="#permissionstatus">PermissionStatus</a>&gt;</code>
+
+--------------------
+
+
+### checkStatus()
+
+```typescript
+checkStatus() => Promise<EspProvisioningStatus>
+```
+
+See if the bluetooth adapter is up and running
+
+**Returns:** <code>Promise&lt;<a href="#espprovisioningstatus">EspProvisioningStatus</a>&gt;</code>
 
 --------------------
 
@@ -263,6 +277,14 @@ Disable detailed logging.
 | -------------- | ----------------------------------------------------------- |
 | **`ble`**      | <code><a href="#permissionstate">PermissionState</a></code> |
 | **`location`** | <code><a href="#permissionstate">PermissionState</a></code> |
+
+
+#### EspProvisioningStatus
+
+| Prop           | Type                                                                       |
+| -------------- | -------------------------------------------------------------------------- |
+| **`ble`**      | <code>{ supported: boolean; allowed: boolean; poweredOn: boolean; }</code> |
+| **`location`** | <code>{ allowed: boolean; }</code>                                         |
 
 
 ### Type Aliases
