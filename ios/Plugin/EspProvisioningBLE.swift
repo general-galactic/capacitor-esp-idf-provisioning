@@ -150,12 +150,44 @@ public class EspProvisioningBLE: NSObject, ESPBLEDelegate, CBCentralManagerDeleg
     }
 
     public func checkStatus() -> EspProvisioningStatus {
-        let permissions = self.gatherPermissions()
         let supported = self.centralManagerState != CBManagerState.unsupported
         let poweredOn = self.centralManagerState == CBManagerState.poweredOn || self.centralManagerState == CBManagerState.resetting
-        let ble = EspProvisioningBluetoothStatus(supported: supported, allowed: permissions.ble == CapacitorPermissionStatus.granted, poweredOn: poweredOn)
+       
+        let ble = EspProvisioningBluetoothStatus(supported: supported, allowed: self.bluetoothIsAllowed(), poweredOn: poweredOn)
         
         return EspProvisioningStatus(ble: ble)
+    }
+    
+    private func bluetoothIsAllowed() -> Bool {
+        if #available(iOS 13.0, *) {
+            switch self.centralManagerAuthorizationState {
+            case .allowedAlways:
+                return true
+            case .restricted:
+                return true
+            case .denied:
+                return false
+            case .notDetermined:
+                return false
+            @unknown default:
+                return false // WTF should we do here?
+            }
+        }
+        
+        switch self.centralManagerState {
+            case .poweredOn:
+                return true
+            case .poweredOff:
+                return true
+            case .unauthorized:
+                return false
+            case .resetting:
+                return true
+            case .unknown, .unsupported:
+                return false
+            @unknown default:
+                return false
+        }
     }
                                                  
     private func gatherPermissions() -> EspProvisioningPermissionsStatus {
