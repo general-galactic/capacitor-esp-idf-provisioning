@@ -150,27 +150,28 @@ public class EspProvisioningBLE {
 
     public boolean assertBluetooth(UsesBluetooth listener) {
         if(!this.hasBLEHardware()) {
-            listener.bleNotSupported();
+            if (listener != null) listener.bleNotSupported();
             return false;
         }
 
         if(!this.blePermissionsArGranted()) {
-            listener.blePermissionNotGranted();
+            if (listener != null) listener.blePermissionNotGranted();
             return false;
         }
 
         if(!this.bleIsEnabled()) {
-            listener.bleNotPoweredOn();
+            if (listener != null) listener.bleNotPoweredOn();
             return false;
         }
 
         return true;
     }
 
+
     @SuppressLint("MissingPermission")
     @PluginMethod
     public void searchESPDevices(String devicePrefix, ESPConstants.TransportType transport, ESPConstants.SecurityType security, ScanListener listener) {
-        this.assertBluetooth(listener);
+        if (!this.assertBluetooth(null)) return;
 
         if (ActivityCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Error permissionError = new Error("Not able to start scan as Location permission is not granted.");
@@ -216,9 +217,17 @@ public class EspProvisioningBLE {
 
             @Override
             public void onFailure(Exception e) {
-                Error bleScanFailedError = new Error("BLE Scan failed: " + e.getMessage());
-                errorLog(bleScanFailedError);
-                listener.errorOccurred(bleScanFailedError);
+                String message = e.getMessage();
+                if (message.indexOf("statusCode=2") > -1) {
+                    // statusCode=2 means that the nearby devices permission is not allowed in the device app settings
+                    // For some reason this can be true and all the permissions checks coded here are valid
+                    // Deciding to map this error here so the UI can at least response with a useful message
+                    listener.blePermissionsIssue();
+                }else {
+                    Error bleScanFailedError = new Error("BLE Scan failed: " + e.getMessage());
+                    errorLog(bleScanFailedError);
+                    listener.errorOccurred(bleScanFailedError);
+                }
             }
         };
 
@@ -226,7 +235,7 @@ public class EspProvisioningBLE {
     }
 
     public void connect(String deviceName, String proofOfPossession, ConnectListener listener){
-        if(!this.assertBluetooth(listener)) return;
+        if (!this.assertBluetooth(null)) return;
 
         DiscoveredBluetoothDevice bleDevice = this.devices.get(deviceName);
         if(bleDevice == null) {
@@ -317,8 +326,6 @@ public class EspProvisioningBLE {
     }
 
     private ESPDevice getESPDevice(String deviceName, UsesESPDevice listener){
-        if (!this.assertBluetooth(listener)) return null;
-
         ESPDevice device = this.getESPDevice(deviceName);
 
         if (device == null && listener != null) {
@@ -329,6 +336,8 @@ public class EspProvisioningBLE {
     }
 
     public void scanWifiList(String deviceName, ScanWiFiListener listener) {
+        if (!this.assertBluetooth(null)) return;
+
         ESPDevice espDevice = this.getESPDevice(deviceName, listener);
         if(espDevice == null) return;
 
@@ -349,6 +358,8 @@ public class EspProvisioningBLE {
     }
 
     public void provision(String deviceName, String ssid, String passPhrase, WifiProvisionListener listener) {
+        if (!this.assertBluetooth(null)) return;
+
         ESPDevice espDevice = this.getESPDevice(deviceName, listener);
         if (espDevice == null) return;
 

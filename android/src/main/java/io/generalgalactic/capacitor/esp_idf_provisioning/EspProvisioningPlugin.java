@@ -141,6 +141,8 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
 
     @PluginMethod
     public void searchESPDevices(PluginCall call) {
+        if (!this.implementation.assertBluetooth(new BluetoothRequiredCallHandler(call))) return;
+
         String devicePrefix = call.getString("devicePrefix");
         ESPConstants.TransportType transport = this.transportTypeFromString(call.getString("transport"));
         ESPConstants.SecurityType security = this.securityTypeFromString(call.getString("security"));
@@ -169,18 +171,8 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
             }
 
             @Override
-            public void bleNotPoweredOn() {
-                call.reject("Bluetooth must be enabled");
-            }
-
-            @Override
-            public void bleNotSupported() {
-                call.reject("Bluetooth is required");
-            }
-
-            @Override
-            public void blePermissionNotGranted() {
-                call.reject("Bluetooth and Location permissions are required");
+            public void blePermissionsIssue() {
+                call.reject("Bluetooth (Nearby Devices) and Location permissions are required");
             }
 
         });
@@ -188,6 +180,8 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
 
     @PluginMethod
     public void connect(PluginCall call) {
+        if (!this.implementation.assertBluetooth(new BluetoothRequiredCallHandler(call))) return;
+
         String deviceName = call.getString("deviceName");
         String proofOfPossession = call.getString("proofOfPossession");
 
@@ -215,26 +209,13 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
                 call.reject("Device connection failed: " + deviceName);
             }
 
-            @Override
-            public void bleNotPoweredOn() {
-                call.reject("Bluetooth must be enabled");
-            }
-
-            @Override
-            public void bleNotSupported() {
-                call.reject("Bluetooth is required");
-            }
-
-            @Override
-            public void blePermissionNotGranted() {
-                call.reject("Bluetooth and Location permissions are required");
-            }
-
         });
     }
 
     @PluginMethod
     public void scanWifiList(PluginCall call) {
+        if (!this.implementation.assertBluetooth(new BluetoothRequiredCallHandler(call))) return;
+
         String deviceName = call.getString("deviceName");
         this.implementation.scanWifiList(deviceName, new ScanWiFiListener() {
 
@@ -263,26 +244,13 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
                 call.reject("WiFi scan failed: " + error.getMessage());
             }
 
-            @Override
-            public void bleNotPoweredOn() {
-                call.reject("Bluetooth must be enabled");
-            }
-
-            @Override
-            public void bleNotSupported() {
-                call.reject("Bluetooth is required");
-            }
-
-            @Override
-            public void blePermissionNotGranted() {
-                call.reject("Bluetooth and Location permissions are required");
-            }
-
         });
     }
 
     @PluginMethod
     public void provision(PluginCall call) {
+        if (!this.implementation.assertBluetooth(new BluetoothRequiredCallHandler(call))) return;
+
         String deviceName = call.getString("deviceName");
         String ssid = call.getString("ssid");
         String passPhrase = call.getString("passPhrase");
@@ -306,26 +274,13 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
                 call.reject("Device not found: " + deviceName);
             }
 
-            @Override
-            public void bleNotPoweredOn() {
-                call.reject("Bluetooth must be enabled");
-            }
-
-            @Override
-            public void bleNotSupported() {
-                call.reject("Bluetooth is required");
-            }
-
-            @Override
-            public void blePermissionNotGranted() {
-                call.reject("Bluetooth and Location permissions are required");
-            }
-
         });
     }
 
     @PluginMethod
     public void sendCustomDataString(PluginCall call) {
+        if (!this.implementation.assertBluetooth(new BluetoothRequiredCallHandler(call))) return;
+
         String deviceName = call.getString("deviceName");
         String path = call.getString("path");
         String dataString = call.getString("dataString");
@@ -350,21 +305,6 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
                 call.reject("Device not found: " + deviceName);
             }
 
-            @Override
-            public void bleNotPoweredOn() {
-                call.reject("Bluetooth must be enabled");
-            }
-
-            @Override
-            public void bleNotSupported() {
-                call.reject("Bluetooth is required");
-            }
-
-            @Override
-            public void blePermissionNotGranted() {
-                call.reject("Bluetooth and Location permissions are required");
-            }
-
         });
     }
 
@@ -372,6 +312,7 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
     public void disconnect(PluginCall call) {
         String deviceName = call.getString("deviceName");
         this.implementation.disconnect(deviceName, new DisconnectListener() {
+
             @Override
             public void deviceDisconnected() {
                 call.resolve();
@@ -380,21 +321,6 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
             @Override
             public void deviceNotFound(String deviceName) {
                 call.reject("Device not found: " + deviceName);
-            }
-
-            @Override
-            public void bleNotPoweredOn() {
-                call.resolve();
-            }
-
-            @Override
-            public void bleNotSupported() {
-                call.reject("Bluetooth is required");
-            }
-
-            @Override
-            public void blePermissionNotGranted() {
-                call.reject("Bluetooth and Location permissions are required");
             }
 
         });
