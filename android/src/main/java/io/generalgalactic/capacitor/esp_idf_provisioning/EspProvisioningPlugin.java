@@ -125,6 +125,8 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
         JSObject location = new JSObject();
         location.put("allowed", this.locationPermissionGranted());
 
+        Log.d("capacitor-esp-provision", String.format("Other permissions: %b, %b, %b", this.implementation.blePermissionsArGranted(), this.blePermissionGranted(), this.locationPermissionGranted()));
+
         JSObject ble = new JSObject();
         ble.put("supported", this.implementation.hasBLEHardware());
         ble.put("allowed", this.blePermissionGranted());
@@ -176,6 +178,11 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
                 call.reject("Bluetooth is required");
             }
 
+            @Override
+            public void blePermissionNotGranted() {
+                call.reject("Bluetooth and Location permissions are required");
+            }
+
         });
     }
 
@@ -216,6 +223,11 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
             @Override
             public void bleNotSupported() {
                 call.reject("Bluetooth is required");
+            }
+
+            @Override
+            public void blePermissionNotGranted() {
+                call.reject("Bluetooth and Location permissions are required");
             }
 
         });
@@ -261,6 +273,11 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
                 call.reject("Bluetooth is required");
             }
 
+            @Override
+            public void blePermissionNotGranted() {
+                call.reject("Bluetooth and Location permissions are required");
+            }
+
         });
     }
 
@@ -297,6 +314,11 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
             @Override
             public void bleNotSupported() {
                 call.reject("Bluetooth is required");
+            }
+
+            @Override
+            public void blePermissionNotGranted() {
+                call.reject("Bluetooth and Location permissions are required");
             }
 
         });
@@ -338,6 +360,11 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
                 call.reject("Bluetooth is required");
             }
 
+            @Override
+            public void blePermissionNotGranted() {
+                call.reject("Bluetooth and Location permissions are required");
+            }
+
         });
     }
 
@@ -364,6 +391,12 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
             public void bleNotSupported() {
                 call.reject("Bluetooth is required");
             }
+
+            @Override
+            public void blePermissionNotGranted() {
+                call.reject("Bluetooth and Location permissions are required");
+            }
+
         });
     }
 

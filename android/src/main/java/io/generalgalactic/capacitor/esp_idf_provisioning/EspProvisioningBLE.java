@@ -15,6 +15,7 @@ import android.os.Handler;
 import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.espressif.provisioning.DeviceConnectionEvent;
 import com.espressif.provisioning.ESPConstants;
@@ -139,15 +140,30 @@ public class EspProvisioningBLE {
         return adapter.isEnabled();
     }
 
+    public boolean blePermissionsArGranted(){
+        if (ContextCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) return false;
+        if (ContextCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) return false;
+        if (ContextCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) return false;
+        if (ContextCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) return false;
+        return true;
+    }
+
     public boolean assertBluetooth(UsesBluetooth listener) {
         if(!this.hasBLEHardware()) {
             listener.bleNotSupported();
             return false;
         }
+
+        if(!this.blePermissionsArGranted()) {
+            listener.blePermissionNotGranted();
+            return false;
+        }
+
         if(!this.bleIsEnabled()) {
             listener.bleNotPoweredOn();
             return false;
         }
+
         return true;
     }
 
