@@ -40,7 +40,8 @@ class EventCallback {
                         alias = "ble",
                         strings = {
                                 Manifest.permission.BLUETOOTH,
-                                Manifest.permission.BLUETOOTH_ADMIN
+                                Manifest.permission.BLUETOOTH_ADMIN,
+                                Manifest.permission.BLUETOOTH_SCAN
                         }
                 ),
                 @Permission(
