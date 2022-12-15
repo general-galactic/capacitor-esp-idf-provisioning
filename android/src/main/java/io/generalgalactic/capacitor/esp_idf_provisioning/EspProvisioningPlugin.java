@@ -41,7 +41,8 @@ class EventCallback {
                         strings = {
                                 Manifest.permission.BLUETOOTH,
                                 Manifest.permission.BLUETOOTH_ADMIN,
-                                Manifest.permission.BLUETOOTH_SCAN
+                                Manifest.permission.BLUETOOTH_SCAN,
+                                Manifest.permission.BLUETOOTH_CONNECT
                         }
                 ),
                 @Permission(
