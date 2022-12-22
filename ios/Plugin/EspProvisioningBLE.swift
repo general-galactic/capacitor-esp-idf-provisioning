@@ -123,9 +123,7 @@ public class EspProvisioningBLE: NSObject, ESPBLEDelegate, CBCentralManagerDeleg
     private var connectedDevice: ESPDevice?
 
     private lazy var centralManager: CBCentralManager = {
-        let manager = CBCentralManager.init()
-        manager.delegate = self
-        return manager
+        return CBCentralManager(delegate: self, queue: nil, options: [CBCentralManagerOptionShowPowerAlertKey: false])
     }()
 
     private var centralManagerState: CBManagerState {
@@ -146,10 +144,37 @@ public class EspProvisioningBLE: NSObject, ESPBLEDelegate, CBCentralManagerDeleg
     }
     
     public func centralManagerDidUpdateState(_ central: CBCentralManager) {
-        self.plugin.notifyListeners("statusUpdate", data: self.checkStatus().toDict())
+        self.checkStatus { status in
+            if let status = status {
+                self.plugin.notifyListeners("statusUpdate", data: status.toDict())
+            }
+        }
     }
 
-    public func checkStatus() -> EspProvisioningStatus {
+    public func checkStatus(completionHandler: @escaping (EspProvisioningStatus?) -> Void) -> Void {
+        self.checkStatus(count: 0, completionHandler: completionHandler)
+    }
+    
+    // wait up to 2 seconds for state to leave unknown
+    private func checkStatus(count: Int, completionHandler: @escaping (EspProvisioningStatus?) -> Void) -> Void {
+        if (count > 3) {
+            // After 2 seconds we give up and will report the BLE status as whatever it is right now
+            completionHandler(self.buildEspProvisioningStatus())
+            return
+        }
+        
+        if (self.centralManagerState == CBManagerState.unknown) {
+            // The state can be unknown when first starting up. Give it a half second and check again.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.checkStatus(count: count + 1, completionHandler: completionHandler)
+            }
+            return
+        }
+        
+        completionHandler(self.buildEspProvisioningStatus())
+    }
+    
+    private func buildEspProvisioningStatus() -> EspProvisioningStatus {
         let supported = self.centralManagerState != CBManagerState.unsupported
         let poweredOn = self.centralManagerState == CBManagerState.poweredOn || self.centralManagerState == CBManagerState.resetting
        

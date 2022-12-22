@@ -14,8 +14,13 @@ public class EspProvisioningPlugin: CAPPlugin {
     private lazy var implementation = EspProvisioningBLE(self)
    
     @objc public func checkStatus(_ call: CAPPluginCall) {
-        let result = implementation.checkStatus().toDict()
-        call.resolve(result)
+        implementation.checkStatus { status in
+            if let status = status {
+                call.resolve(status.toDict())
+                return
+            }
+            call.reject("Error checking device status")
+        }
     }
     
     @objc override public func checkPermissions(_ call: CAPPluginCall) {
