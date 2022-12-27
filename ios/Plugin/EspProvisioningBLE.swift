@@ -222,14 +222,15 @@ public class EspProvisioningBLE: NSObject, ESPBLEDelegate, CBCentralManagerDeleg
             switch self.centralManagerAuthorizationState {
             case .allowedAlways:
                 bluetoothState = .granted
-                return
             case .restricted:
                 bluetoothState = .granted
-                return
             case .denied:
                 bluetoothState = .denied
+            case .notDetermined:
+                bluetoothState = .denied // WTF?
             @unknown default:
-                return
+                bluetoothState = .denied // WTF?
+            }
         } else {
             if (self.centralManagerState == .unauthorized) {
                 bluetoothState = .denied
