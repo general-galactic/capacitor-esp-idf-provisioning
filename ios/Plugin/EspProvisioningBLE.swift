@@ -218,35 +218,24 @@ public class EspProvisioningBLE: NSObject, ESPBLEDelegate, CBCentralManagerDeleg
     private func gatherPermissions() -> EspProvisioningPermissionsStatus {
         var bluetoothState: CapacitorPermissionStatus
 
-        // Allowed values defined by PermissionState from capacitor: 'prompt' | 'prompt-with-rationale' | 'granted' | 'denied'
-        switch self.centralManagerState {
-            case .poweredOn:
-                if #available(iOS 13.0, *) {
-                    switch self.centralManagerAuthorizationState {
-                    case .allowedAlways:
-                        bluetoothState = .granted
-                    case .restricted:
-                        bluetoothState = .granted
-                    case .denied:
-                        bluetoothState = .denied
-                    case .notDetermined:
-                        bluetoothState = .prompt
-                    @unknown default:
-                        bluetoothState = .denied
-                    }
-                } else {
-                    bluetoothState = .granted
-                }
-            case .poweredOff:
-                bluetoothState = .prompt
-            case .unauthorized:
-                bluetoothState = .denied
-            case .resetting:
-                bluetoothState = .granted // TODO: is this right?
-            case .unknown, .unsupported:
+        if #available(iOS 13.0, *) {
+            switch self.centralManagerAuthorizationState {
+            case .allowedAlways:
+                bluetoothState = .granted
+                return
+            case .restricted:
+                bluetoothState = .granted
+                return
+            case .denied:
                 bluetoothState = .denied
             @unknown default:
+                return
+        } else {
+            if (self.centralManagerState == .unauthorized) {
                 bluetoothState = .denied
+            } else {
+                bluetoothState = .granted
+            }
         }
 
         return EspProvisioningPermissionsStatus(ble: bluetoothState)
