@@ -415,6 +415,8 @@ public class EspProvisioningBLE: NSObject, ESPBLEDelegate, CBCentralManagerDeleg
     }
 
     func disconnect(deviceName: String, completionHandler: @escaping (Bool, ESPProvisioningError?) -> Void) {
+        self.debug("Device Disconnected: connectedDevice=\(String(describing: self.connectedDevice?.name))")
+
         guard let device = self.deviceMap[deviceName] else {
             return completionHandler(false, ESPProvisioningError.deviceNotFound(deviceName))
         }
@@ -432,7 +434,7 @@ public class EspProvisioningBLE: NSObject, ESPBLEDelegate, CBCentralManagerDeleg
     }
     
     public func peripheralDisconnected(peripheral: CBPeripheral, error: Error?) {
-        self.debug("Device disconnected \(String(describing: error?.localizedDescription))")
+        self.debug("Peripheral Disconnected \(String(describing: error?.localizedDescription))")
 
         // TODO: ensure disconnecting device is the connected device
         var data = ["peripheralName": peripheral.name ?? "unknown"]
@@ -441,13 +443,26 @@ public class EspProvisioningBLE: NSObject, ESPBLEDelegate, CBCentralManagerDeleg
         }
         self.setConnectedDevice(nil)
         
+        do {
+            let jsonData = try JSONSerialization.data(withJSONObject: data, options: .prettyPrinted)
+            self.debug("Notifying Disconnection Listeners: data=\(String(describing: data))")
+        } catch {
+            self.debug("Notifying Disconnection Listeners: data=can't print")
+        }
+
         self.plugin.notifyListeners("deviceDisconnected", data: data)
     }
     
     public func peripheralFailedToConnect(peripheral: CBPeripheral?, error: Error?) {
         // TODO: ensure disconnecting device is the connected device
+        var data = ["peripheralName": peripheral?.name ?? "unknown"]
+        if let lastDevice = self.connectedDevice {
+            data["deviceName"] = lastDevice.name
+        }
+        
         self.setConnectedDevice(nil)
         self.debug("Failed to connect to device: \(String(describing: peripheral?.name))")
+        self.plugin.notifyListeners("deviceDisconnected", data: data)
     }
 
 }
