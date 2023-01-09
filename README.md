@@ -159,14 +159,14 @@ Request a list of available WiFi networks from the device with the given name.
 ### provision(...)
 
 ```typescript
-provision(options: { deviceName: string; ssid: string; passPhrase: string; }) => Promise<{ success: boolean; }>
+provision(options: { deviceName: string; ssid: string; passPhrase?: string; }) => Promise<{ success: boolean; }>
 ```
 
 Provision the device onto WiFi using the given ssid and passPhrase.
 
-| Param         | Type                                                                   |
-| ------------- | ---------------------------------------------------------------------- |
-| **`options`** | <code>{ deviceName: string; ssid: string; passPhrase: string; }</code> |
+| Param         | Type                                                                    |
+| ------------- | ----------------------------------------------------------------------- |
+| **`options`** | <code>{ deviceName: string; ssid: string; passPhrase?: string; }</code> |
 
 **Returns:** <code>Promise&lt;{ success: boolean; }&gt;</code>
 
