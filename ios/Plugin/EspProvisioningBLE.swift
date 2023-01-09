@@ -363,7 +363,7 @@ public class EspProvisioningBLE: NSObject, ESPBLEDelegate, CBCentralManagerDeleg
         }
     }
 
-    func provision(deviceName: String, ssid: String, passPhrase: String? = "", completionHandler: @escaping (Bool, ESPProvisioningError?) -> Void) -> Void {
+    func provision(deviceName: String, ssid: String, passPhrase: String, completionHandler: @escaping (Bool, ESPProvisioningError?) -> Void) -> Void {
         guard let device = self.deviceMap[deviceName] else {
             return completionHandler(false, ESPProvisioningError.deviceNotFound(deviceName))
         }
