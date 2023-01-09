@@ -367,11 +367,7 @@ public class EspProvisioningBLE: NSObject, ESPBLEDelegate, CBCentralManagerDeleg
         guard let device = self.deviceMap[deviceName] else {
             return completionHandler(false, ESPProvisioningError.deviceNotFound(deviceName))
         }
-        
-        guard let passPhrase = call.getString("passPhrase") else {
-            return call.reject("passPhrase is required")
-        }
-        
+
         self.debug("Provisioning device: \(deviceName)")
         
         device.provision(ssid: ssid, passPhrase: passPhrase) { status in
