@@ -113,9 +113,7 @@ public class EspProvisioningPlugin: CAPPlugin {
         guard let ssid = call.getString("ssid") else {
             return call.reject("ssid is required")
         }
-        guard let passPhrase = call.getString("passPhrase") else {
-            return call.reject("passPhrase is required")
-        }
+        let passPhrase = call.getString("passPhrase")
         
         implementation.provision(deviceName: deviceName, ssid: ssid, passPhrase: passPhrase) { success, error in
             if let error = error {

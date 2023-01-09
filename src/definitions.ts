@@ -92,7 +92,7 @@ export interface EspProvisioningPlugin extends Plugin {
    * 
    * @param options {{ deviceName: string, ssid: string, passPhrase: string }}
    */
-  provision(options: { deviceName: string, ssid: string, passPhrase: string }): Promise<{ success: boolean }>;
+  provision(options: { deviceName: string, ssid: string, passPhrase?: string }): Promise<{ success: boolean }>;
 
   /**
    * Send a custom string to the device with the given name. This is usefull if you need to share other data with
