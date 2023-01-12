@@ -76,8 +76,14 @@ public class EspProvisioningPlugin: CAPPlugin {
         guard let proofOfPossession = call.getString("proofOfPossession") else {
             return call.reject("proofOfPossession is required")
         }
+        guard let transport = self.stringToEspTransport(call.getString("transport")) else {
+            return call.reject("transport is required")
+        }
+        guard let security = self.stringToEspSecurity(call.getString("security")) else {
+            return call.reject("security is required")
+        }
         
-        implementation.connect(deviceName: deviceName, proofOfPossession: proofOfPossession) { success, error, cause in
+        implementation.connect(deviceName: deviceName, proofOfPossession: proofOfPossession, transport: transport, security: security) { success, error, cause in
             if let error = error {
                 if let cause = cause {
                     call.reject(error.message, "connect-error-1", cause)

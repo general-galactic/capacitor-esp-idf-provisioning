@@ -117,7 +117,6 @@ public class EspProvisioningStatus {
 public class EspProvisioningBLE: NSObject, ESPBLEDelegate, CBCentralManagerDelegate {
  
     private let plugin: CAPPlugin
-    private var deviceMap = [String: ESPDevice]()
     private var loggingEnabled = false
     
     private var connectedDevice: ESPDevice?
@@ -173,7 +172,7 @@ public class EspProvisioningBLE: NSObject, ESPBLEDelegate, CBCentralManagerDeleg
         
         completionHandler(self.buildEspProvisioningStatus())
     }
-    
+     
     private func buildEspProvisioningStatus() -> EspProvisioningStatus {
         let supported = self.centralManagerState != CBManagerState.unsupported
         let poweredOn = self.centralManagerState == CBManagerState.poweredOn || self.centralManagerState == CBManagerState.resetting
@@ -258,9 +257,9 @@ public class EspProvisioningBLE: NSObject, ESPBLEDelegate, CBCentralManagerDeleg
     }
     
     func disableLogging() -> Void {
-        self.debug("DISABLED LOGGING")
         self.loggingEnabled = false
         ESPProvisionManager.shared.enableLogs(false)
+        self.debug("DISABLED LOGGING")
     }
     
     func debug(_ message: String){
@@ -271,9 +270,6 @@ public class EspProvisioningBLE: NSObject, ESPBLEDelegate, CBCentralManagerDeleg
 
     func searchESPDevices(devicePrefix: String, transport: ESPTransport, security: ESPSecurity, completionHandler: @escaping ([ESPDevice]?, ESPProvisioningError?) -> Void) -> Void {
         // guard bluetoothIsAccessible(call) else { return } // TODO: make these guards work, this one fails the first time because BLE is slow as fuck
-        
-        self.deviceMap = [:] // reset our cached devices
-
         self.debug("Running searchESPDevices: devicePrefix=\(devicePrefix); transport=\(transport); security=\(security);")
         ESPProvisionManager.shared.searchESPDevices(devicePrefix: devicePrefix, transport: transport, security: security) { devices, error in
             self.debug("searchESPDevices callback: devicePrefix=\(devicePrefix); transport=\(transport); security=\(security);")
@@ -286,14 +282,6 @@ public class EspProvisioningBLE: NSObject, ESPBLEDelegate, CBCentralManagerDeleg
                 completionHandler(nil, ESPProvisioningError.libraryError(error.description, errorCode: error.code))
             }
             
-            // We need to cache devices so we can retain references to them while the capacitor bridge is used to
-            // perform operations
-            if let devices = devices {
-                for device in devices {
-                    self.deviceMap[device.name] = device
-                }
-            }
-
             completionHandler(devices, nil)
         }
     }
@@ -321,11 +309,8 @@ public class EspProvisioningBLE: NSObject, ESPBLEDelegate, CBCentralManagerDeleg
         }
     }
 
-    // TODO: Proof of Possession
-    func connect(deviceName: String, proofOfPossession: String, completionHandler: @escaping (Bool, ESPProvisioningError?, Error?) -> Void) -> Void {
-        guard let device = self.deviceMap[deviceName] else {
-            return completionHandler(false, ESPProvisioningError.deviceNotFound(deviceName), nil)
-        }
+    func connect(deviceName: String, proofOfPossession: String, transport: ESPTransport, security: ESPSecurity, completionHandler: @escaping (Bool, ESPProvisioningError?, Error?) -> Void) -> Void {
+        let device = ESPDevice(name: deviceName, security: security, transport: transport, proofOfPossession: proofOfPossession)
 
         self.debug("Connecting to device: \(deviceName) \(proofOfPossession)")
 
@@ -344,7 +329,7 @@ public class EspProvisioningBLE: NSObject, ESPBLEDelegate, CBCentralManagerDeleg
     }
 
     func scanWifiList(deviceName: String, completionHandler: @escaping ([ESPWifiNetwork]?, ESPProvisioningError?) -> Void) -> Void {
-        guard let device = self.deviceMap[deviceName] else {
+        guard let device = self.connectedDevice else {
             return completionHandler(nil, ESPProvisioningError.deviceNotFound(deviceName))
         }
 
@@ -364,7 +349,7 @@ public class EspProvisioningBLE: NSObject, ESPBLEDelegate, CBCentralManagerDeleg
     }
 
     func provision(deviceName: String, ssid: String, passPhrase: String, completionHandler: @escaping (Bool, ESPProvisioningError?) -> Void) -> Void {
-        guard let device = self.deviceMap[deviceName] else {
+        guard let device = self.connectedDevice else {
             return completionHandler(false, ESPProvisioningError.deviceNotFound(deviceName))
         }
 
@@ -388,7 +373,7 @@ public class EspProvisioningBLE: NSObject, ESPBLEDelegate, CBCentralManagerDeleg
             completionHandler(nil, ESPProvisioningError.unableToConvertStringToData)
             return
         }
-        guard let device = self.deviceMap[deviceName] else {
+        guard let device = self.connectedDevice else {
             return completionHandler(nil, ESPProvisioningError.deviceNotFound(deviceName))
         }
         
@@ -417,11 +402,10 @@ public class EspProvisioningBLE: NSObject, ESPBLEDelegate, CBCentralManagerDeleg
     func disconnect(deviceName: String, completionHandler: @escaping (Bool, ESPProvisioningError?) -> Void) {
         self.debug("Device Disconnected: connectedDevice=\(String(describing: self.connectedDevice?.name))")
 
-        guard let device = self.deviceMap[deviceName] else {
+        guard let device = self.connectedDevice else {
             return completionHandler(false, ESPProvisioningError.deviceNotFound(deviceName))
         }
 
-        self.deviceMap = [:]
         self.setConnectedDevice(nil)
         device.disconnect()
         completionHandler(true, nil)

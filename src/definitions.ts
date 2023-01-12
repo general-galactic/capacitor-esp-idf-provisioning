@@ -78,7 +78,7 @@ export interface EspProvisioningPlugin extends Plugin {
    * 
    * @param options {{ deviceName: string, proofOfPossession: string }}
    */
-  connect(options: { deviceName: string, proofOfPossession: string }): Promise<{ connected: boolean }>;
+  connect(options: { deviceName: string, proofOfPossession: string, transport: ESPTransport, security: ESPSecurity }): Promise<{ connected: boolean }>;
 
   /**
    * Request a list of available WiFi networks from the device with the given name.

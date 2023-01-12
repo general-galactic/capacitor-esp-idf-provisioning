@@ -236,9 +236,10 @@ public class EspProvisioningBLE {
         this.getESPProvisionManager().searchBleEspDevices(devicePrefix, bleScanListener);
     }
 
-    public void connect(String deviceName, String proofOfPossession, ConnectListener listener){
+    public void connect(String deviceName, String proofOfPossession, ESPConstants.TransportType transport, ESPConstants.SecurityType security, ConnectListener listener){
         if (!this.assertBluetooth(null)) return;
 
+        this.getESPProvisionManager().createESPDevice(transport, security);
         DiscoveredBluetoothDevice bleDevice = this.devices.get(deviceName);
         if(bleDevice == null) {
             listener.deviceNotFound(deviceName);

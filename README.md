@@ -36,6 +36,14 @@ You need to add the `https://jitpack.io` repository to your `build.gradle`. See 
 **`ESPProvisioning is not implemented on [iOS|Android]`**
 You need to run `npx cap sync`
 
+
+## Developing
+
+### IOS
+
+After cloning the repo you'll need to go to the `./ios` folder and run `pod install` so that XCode understands the ESPProvisioning library.
+
+
 ## API
 
 <docgen-index>

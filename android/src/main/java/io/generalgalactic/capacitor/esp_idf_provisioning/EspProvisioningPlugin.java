@@ -186,8 +186,10 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
 
         String deviceName = call.getString("deviceName");
         String proofOfPossession = call.getString("proofOfPossession");
+        ESPConstants.TransportType transport = this.transportTypeFromString(call.getString("transport"));
+        ESPConstants.SecurityType security = this.securityTypeFromString(call.getString("security"));
 
-        this.implementation.connect(deviceName, proofOfPossession, new ConnectListener() {
+        this.implementation.connect(deviceName, proofOfPossession, transport, security, new ConnectListener() {
 
             @Override
             public void connected(ESPDevice device) {
