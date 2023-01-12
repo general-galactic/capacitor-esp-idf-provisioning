@@ -321,7 +321,6 @@ public class EspProvisioningBLE: NSObject, ESPBLEDelegate, CBCentralManagerDeleg
         }
     }
 
-    // TODO: Proof of Possession
     func connect(deviceName: String, proofOfPossession: String, completionHandler: @escaping (Bool, ESPProvisioningError?, Error?) -> Void) -> Void {
         guard let device = self.deviceMap[deviceName] else {
             return completionHandler(false, ESPProvisioningError.deviceNotFound(deviceName), nil)
@@ -421,7 +420,12 @@ public class EspProvisioningBLE: NSObject, ESPBLEDelegate, CBCentralManagerDeleg
             return completionHandler(false, ESPProvisioningError.deviceNotFound(deviceName))
         }
 
-        self.deviceMap = [:]
+        // Stopped clearing deviceMap because it was causing issues. We call 'disconnect' from the app side a lot
+        // to ensure we aren't leaking BLE connections. We need this map around if the app fails to connect due to a
+        // bad proof of possession and the user want's to try again. Otherwise they have to rescan all devices.
+        // This will leak devices - maybe we should have a timer that evicts old discovered devices
+        // self.deviceMap = [:]
+        
         self.setConnectedDevice(nil)
         device.disconnect()
         completionHandler(true, nil)

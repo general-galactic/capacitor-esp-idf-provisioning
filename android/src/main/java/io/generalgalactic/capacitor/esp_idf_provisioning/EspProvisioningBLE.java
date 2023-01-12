@@ -471,7 +471,11 @@ public class EspProvisioningBLE {
 
         if (listener != null ) listener.deviceDisconnected();
 
-        this.devices = new HashMap<String, DiscoveredBluetoothDevice>();
+        // Stopped clearing devices because it was causing issues. We call 'disconnect' from the app side a lot
+        // to ensure we aren't leaking BLE connections. We need this map around if the app fails to connect due to a
+        // bad proof of possession and the user want's to try again. Otherwise they have to rescan all devices.
+        // This will leak devices - maybe we should have a timer that evicts old discovered devices
+        // this.devices = new HashMap<String, DiscoveredBluetoothDevice>();
     }
 
     private void debugLog(String message){
