@@ -182,6 +182,9 @@ public class EspProvisioningBLE {
             return;
         }
 
+        // Clear the device cache
+        this.devices = new HashMap<String, DiscoveredBluetoothDevice>();
+
         // This sucks, but the ESProvisioning library on iOS takes security and transport for the scan and
         // the Android version takes them for the connect. We're going to store it here from the scan and
         // use it during connect to make the plugin interface consistent. Other option is to take both values
