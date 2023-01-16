@@ -278,8 +278,26 @@ public class EspProvisioningBLE {
                     case ESPConstants.EVENT_DEVICE_CONNECTED:
                         debugLog("Device connected event received");
                         provisioningBLE.startListeningForDisconnection(bleDevice.getName());
-                        provisionManager.getEspDevice().setProofOfPossession(proofOfPossession);
-                        listener.connected(provisionManager.getEspDevice());
+
+                        ESPDevice device = provisionManager.getEspDevice();
+                        device.setProofOfPossession(proofOfPossession);
+
+                        // Initing a session during connection so that secret failures happen
+                        // during connection (like iOS) and not later during other operations.
+                        // This also let's me send a more specific error - rather than a generic code=4
+                        device.initSession(new ResponseListener() {
+
+                            @Override
+                            public void onSuccess(byte[] returnData) {
+                                listener.connected(device);
+                            }
+
+                            @Override
+                            public void onFailure(Exception e) {
+                                listener.initSessionFailed(e);
+                            }
+
+                        });
                         break;
 
                     case ESPConstants.EVENT_DEVICE_DISCONNECTED:

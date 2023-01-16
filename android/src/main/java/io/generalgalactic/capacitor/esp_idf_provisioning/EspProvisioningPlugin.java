@@ -211,6 +211,11 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
                 call.reject("Device connection failed: " + deviceName);
             }
 
+            @Override
+            public void initSessionFailed(Exception e) {
+                call.reject("Failed to initialise session with the device. [sessionInitError] " + e.getMessage()); // sessionInitError matches the error I recieve on the iOS side. Just reusing it here for consistency.
+            }
+
         });
     }
 

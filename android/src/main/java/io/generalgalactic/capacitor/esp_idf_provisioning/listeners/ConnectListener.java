@@ -10,4 +10,6 @@ public interface ConnectListener extends UsesESPDevice {
 
     public void connectionFailed();
 
+    public void initSessionFailed(Exception e);
+
 }
