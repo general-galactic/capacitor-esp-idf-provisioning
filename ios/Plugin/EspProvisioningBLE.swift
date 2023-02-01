@@ -37,6 +37,7 @@ extension ESPProvisioningError: LocalizedError {
 
 class ConnectionDelegate: ESPDeviceConnectionDelegate {
 
+
     private let proofOfPossesion: String
     
     init(proofOfPossesion: String) {
@@ -45,6 +46,10 @@ class ConnectionDelegate: ESPDeviceConnectionDelegate {
     
     func getProofOfPossesion(forDevice: ESPDevice, completionHandler: @escaping (String) -> Void) {
         completionHandler(self.proofOfPossesion)
+    }
+    
+    func getUsername(forDevice: ESPProvision.ESPDevice, completionHandler: @escaping (String?) -> Void) {
+        completionHandler(nil) // TODO: how to support sec2?
     }
 
 }
@@ -447,12 +452,7 @@ public class EspProvisioningBLE: NSObject, ESPBLEDelegate, CBCentralManagerDeleg
         }
         self.setConnectedDevice(nil)
         
-        do {
-            let jsonData = try JSONSerialization.data(withJSONObject: data, options: .prettyPrinted)
-            self.debug("Notifying Disconnection Listeners: data=\(String(describing: data))")
-        } catch {
-            self.debug("Notifying Disconnection Listeners: data=can't print")
-        }
+        self.debug("Notifying Disconnection Listeners: data=\(String(describing: data))")
 
         self.plugin.notifyListeners("deviceDisconnected", data: data)
     }

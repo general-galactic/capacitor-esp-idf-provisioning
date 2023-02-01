@@ -284,6 +284,8 @@ public class EspProvisioningPlugin: CAPPlugin {
             return "secure"
         case .unsecure:
             return "unsecure"
+        case .secure2:
+            return "secure2"
         }
     }
     
