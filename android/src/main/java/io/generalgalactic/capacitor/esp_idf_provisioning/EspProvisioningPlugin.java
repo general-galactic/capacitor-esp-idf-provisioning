@@ -3,6 +3,7 @@ package io.generalgalactic.capacitor.esp_idf_provisioning;
 import android.Manifest;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
 
@@ -19,7 +20,9 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.annotation.Permission;
 import com.getcapacitor.annotation.PermissionCallback;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import io.generalgalactic.capacitor.esp_idf_provisioning.listeners.ConnectListener;
 import io.generalgalactic.capacitor.esp_idf_provisioning.listeners.DisconnectListener;
@@ -34,25 +37,47 @@ class EventCallback {
 }
 
 @CapacitorPlugin(
-        name = "EspProvisioning",
-        permissions = {
-                @Permission(
-                        alias = "ble",
-                        strings = {
-                                Manifest.permission.BLUETOOTH,
-                                Manifest.permission.BLUETOOTH_ADMIN,
-                                Manifest.permission.BLUETOOTH_SCAN,
-                                Manifest.permission.BLUETOOTH_CONNECT
-                        }
-                ),
-                @Permission(
-                        alias = "location",
-                        strings = {
-                                Manifest.permission.ACCESS_COARSE_LOCATION,
-                                Manifest.permission.ACCESS_FINE_LOCATION
-                        }
-                )
-        }
+    name = "EspProvisioning",
+    permissions = {
+        @Permission(
+            alias = "BLUETOOTH_SCAN",
+            strings = {
+                // Manifest.permission.BLUETOOTH_SCAN,
+                "android.permission.BLUETOOTH_SCAN"
+            }
+        ),
+        @Permission(
+            alias = "BLUETOOTH_CONNECT",
+            strings = {
+                // Manifest.permission.BLUETOOTH_ADMIN
+                "android.permission.BLUETOOTH_CONNECT"
+            }
+        ),
+        @Permission(
+            alias = "BLUETOOTH",
+            strings = {
+                Manifest.permission.BLUETOOTH
+            }
+        ),
+        @Permission(
+            alias = "BLUETOOTH_ADMIN",
+            strings = {
+                Manifest.permission.BLUETOOTH_ADMIN
+            }
+        ),
+        @Permission(
+            alias = "ACCESS_COARSE_LOCATION",
+            strings = {
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            }
+        ),
+        @Permission(
+            alias = "ACCESS_FINE_LOCATION",
+            strings = {
+                Manifest.permission.ACCESS_FINE_LOCATION
+            }
+        )
+    }
 )
 public class EspProvisioningPlugin extends Plugin implements EspProvisioningEventListener {
 
@@ -80,7 +105,9 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
         }
 
         if(needsRequest){
-            requestAllPermissions(call, "permissionsCallback");
+            String[] aliases = this.permissionAliases();
+            Log.d("capacitor-esp-provision", String.format("Checking permission aliases: %s", String.join(", ", aliases)));
+            requestPermissionForAliases(aliases, call, "permissionsCallback");
         }else{
             this.permissionsCallback(call);
         }
@@ -88,7 +115,8 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
 
     @PermissionCallback()
     private void permissionsCallback(PluginCall call) {
-        Log.d("capacitor-esp-provision", String.format("Requested ble permissions: hasBLEHardware=%b; blePermissionGranted=%b;", this.implementation.hasBLEHardware(), this.blePermissionGranted()));
+        String[] aliases = this.permissionAliases();
+        Log.d("capacitor-esp-provision", String.format("Requested ble permissions [%s]: hasBLEHardware=%b; blePermissionGranted=%b;", String.join(", ", aliases), this.implementation.hasBLEHardware(), this.blePermissionGranted()));
 
         if(this.implementation.hasBLEHardware() && !this.blePermissionGranted()){
             call.reject("BLE is required");
@@ -103,6 +131,26 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
         call.resolve(this.getPermissions());
     }
 
+    private String[] blePermissionAliases(){
+        if (Build.VERSION.SDK_INT >= 31) {
+            return new String[] { "BLUETOOTH_SCAN", "BLUETOOTH_CONNECT"};
+        } else {
+            return new String[] { "BLUETOOTH", "BLUETOOTH_ADMIN" };
+        }
+    }
+
+    private String[] locationPermissionAliases(){
+        if (Build.VERSION.SDK_INT >= 31) {
+            return new String[] { "ACCESS_FINE_LOCATION" };
+        } else {
+            return new String[] { "ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION" };
+        }
+    }
+
+    private String[] permissionAliases(){
+        return Stream.concat(Arrays.stream(this.blePermissionAliases()), Arrays.stream(this.locationPermissionAliases())).toArray(String[]::new);
+    }
+
     private JSObject getPermissions(){
         JSObject ret = new JSObject();
         ret.put("location", this.getPermissionState("location").toString());
@@ -111,11 +159,25 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
     }
 
     private boolean blePermissionGranted(){
-        return this.getPermissionState("ble") == PermissionState.GRANTED;
+        boolean allPermitted = true;
+        for (String alias: this.blePermissionAliases()) {
+            if (this.getPermissionState(alias) != PermissionState.GRANTED) {
+                allPermitted = false;
+                Log.d("capacitor-esp-provision", String.format("Permission alias '%s' not permitted", alias));
+            }
+        }
+        return allPermitted;
     }
 
     private boolean locationPermissionGranted(){
-        return this.getPermissionState("location") == PermissionState.GRANTED;
+        boolean allPermitted = true;
+        for (String alias: this.locationPermissionAliases()) {
+            if (this.getPermissionState(alias) != PermissionState.GRANTED) {
+                allPermitted = false;
+                Log.d("capacitor-esp-provision", String.format("Permission alias '%s' not permitted", alias));
+            }
+        }
+        return allPermitted;
     }
 
     @PluginMethod

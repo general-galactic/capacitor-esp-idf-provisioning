@@ -143,8 +143,8 @@ public class EspProvisioningBLE {
     public boolean blePermissionsArGranted(){
         if (ContextCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) return false;
         if (ContextCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) return false;
-        if (ContextCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) return false;
-        if (ContextCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) return false;
+//        if (ContextCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) return false;
+//        if (ContextCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) return false;
         if (ContextCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) return false;
         if (ContextCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) return false;
         return true;
