@@ -153,8 +153,8 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
 
     private JSObject getPermissions(){
         JSObject ret = new JSObject();
-        ret.put("location", this.getPermissionState("location").toString());
-        ret.put("ble", this.getPermissionState("ble").toString());
+        ret.put("location", this.locationPermissionGranted());
+        ret.put("ble", this.blePermissionGranted());
         return ret;
     }
 
