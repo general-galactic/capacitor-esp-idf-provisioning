@@ -40,15 +40,13 @@ class EventCallback {
         @Permission(
             alias = "BLUETOOTH_SCAN",
             strings = {
-                // Manifest.permission.BLUETOOTH_SCAN,
-                "android.permission.BLUETOOTH_SCAN"
+                Manifest.permission.BLUETOOTH_SCAN
             }
         ),
         @Permission(
             alias = "BLUETOOTH_CONNECT",
             strings = {
-                // Manifest.permission.BLUETOOTH_ADMIN
-                "android.permission.BLUETOOTH_CONNECT"
+                Manifest.permission.BLUETOOTH_ADMIN
             }
         ),
         @Permission(
