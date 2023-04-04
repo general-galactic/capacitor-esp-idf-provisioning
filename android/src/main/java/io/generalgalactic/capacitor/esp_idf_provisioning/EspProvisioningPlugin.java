@@ -46,7 +46,31 @@ class EventCallback {
         @Permission(
             alias = "BLUETOOTH_CONNECT",
             strings = {
-                Manifest.permission.BLUETOOTH_ADMIN
+                Manifest.permission.BLUETOOTH_CONNECT
+            }
+        ),
+        @Permission(
+            alias = "BLUETOOTH",
+            strings = {
+                    Manifest.permission.BLUETOOTH
+            }
+        ),
+        @Permission(
+            alias = "BLUETOOTH_ADMIN",
+            strings = {
+                    Manifest.permission.BLUETOOTH_ADMIN
+            }
+        ),
+        @Permission(
+            alias = "ACCESS_COARSE_LOCATION",
+            strings = {
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            }
+        ),
+        @Permission(
+            alias = "ACCESS_FINE_LOCATION",
+            strings = {
+                    Manifest.permission.ACCESS_FINE_LOCATION
             }
         )
     }
