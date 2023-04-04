@@ -106,7 +106,7 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
 
         if(needsRequest){
             String[] aliases = this.permissionAliases();
-            Log.d("capacitor-esp-provision", String.format("Checking permission aliases: %s", String.join(", ", aliases)));
+            Log.d("capacitor-esp-provision", String.format("Requesting permission aliases: %s", String.join(", ", aliases)));
             requestPermissionForAliases(aliases, call, "permissionsCallback");
         }else{
             this.permissionsCallback(call);

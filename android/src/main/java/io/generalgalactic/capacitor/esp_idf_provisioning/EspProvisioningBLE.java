@@ -144,7 +144,7 @@ public class EspProvisioningBLE {
 
     public String[] blePermissionAliases(){
         if (Build.VERSION.SDK_INT >= 31) {
-            return new String[] { "BLUETOOTH_SCAN", "BLUETOOTH_CONNECT"};
+            return new String[] { "BLUETOOTH_SCAN", "BLUETOOTH_CONNECT" };
         } else {
             return new String[] { "BLUETOOTH", "BLUETOOTH_ADMIN" };
         }
@@ -163,7 +163,7 @@ public class EspProvisioningBLE {
 
     public String[] locationPermissionAliases(){
         if (Build.VERSION.SDK_INT >= 31) {
-            return new String[] { "ACCESS_FINE_LOCATION" };
+            return new String[] { }; // "ACCESS_FINE_LOCATION"
         } else {
             return new String[] { "ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION" };
         }
