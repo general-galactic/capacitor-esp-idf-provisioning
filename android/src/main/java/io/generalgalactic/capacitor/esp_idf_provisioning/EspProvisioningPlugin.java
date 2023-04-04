@@ -143,7 +143,7 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
         if (Build.VERSION.SDK_INT >= 31) {
             return new String[] { "ACCESS_FINE_LOCATION" };
         } else {
-            return new String[] { "ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION" };
+            return new String[] { "ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION" };
         }
     }
 
@@ -275,7 +275,7 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
 
             @Override
             public void initSessionFailed(Exception e) {
-                call.reject("Failed to initialise session with the device. [sessionInitError] " + e.getMessage()); // sessionInitError matches the error I recieve on the iOS side. Just reusing it here for consistency.
+                call.reject("Failed to initialise session with the device. [sessionInitError] " + e.getMessage()); // sessionInitError matches the error I receive on the iOS side. Just reusing it here for consistency.
             }
 
         });
