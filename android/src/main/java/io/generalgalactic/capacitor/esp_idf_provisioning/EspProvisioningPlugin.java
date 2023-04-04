@@ -120,7 +120,7 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
         Log.d("capacitor-esp-provision", String.format("Requested ble permissions [%s]: hasBLEHardware=%b; blePermissionGranted=%b;", String.join(", ", aliases), this.implementation.hasBLEHardware(), this.implementation.blePermissionsGranted()));
 
         if(this.implementation.hasBLEHardware() && !this.implementation.blePermissionsGranted()){
-            call.reject(String.format("BLE is required [hasBLEHardware=%b; blePermissionsGranted=%b]", this.implementation.hasBLEHardware(), this.implementation.blePermissionsGranted());
+            call.reject(String.format("BLE is required [hasBLEHardware=%b; blePermissionsGranted=%b]", this.implementation.hasBLEHardware(), this.implementation.blePermissionsGranted()));
             return;
         }
 
@@ -160,7 +160,7 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
         ble.put("allowed", this.implementation.blePermissionsGranted());
         ble.put("poweredOn", this.implementation.bleIsEnabled());
         ret.put("ble", ble);
-        
+
         return ret;
     }
 
