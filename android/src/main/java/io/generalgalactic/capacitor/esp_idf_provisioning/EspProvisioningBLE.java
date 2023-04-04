@@ -164,16 +164,20 @@ public class EspProvisioningBLE {
     private boolean blePermissionsGranted(){
         if (Build.VERSION.SDK_INT >= 31) {
             if (ActivityCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                Log.d("capacitor-esp-provision", String.format("MISSING PERMISSION: ", Manifest.permission.BLUETOOTH_SCAN));
                 return false;
             }
             if (ActivityCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                Log.d("capacitor-esp-provision", String.format("MISSING PERMISSION: ", Manifest.permission.BLUETOOTH_CONNECT));
                 return false;
             }
         } else {
             if (ActivityCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
+                Log.d("capacitor-esp-provision", String.format("MISSING PERMISSION: ", Manifest.permission.BLUETOOTH));
                 return false;
             }
-            if (ActivityCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
+                Log.d("capacitor-esp-provision", String.format("MISSING PERMISSION: ", Manifest.permission.BLUETOOTH_ADMIN));
                 return false;
             }
         }

@@ -112,8 +112,9 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
     public boolean blePermissionsGranted(){
         boolean allPermitted = true;
         for (String alias: this.blePermissionAliases()) {
-            Log.d("capacitor-esp-provision", String.format("checking %s -> %s", alias, ContextCompat.checkSelfPermission(this.bridge.getContext(), alias)));
-            if (this.getPermissionState(alias) != PermissionState.GRANTED) {
+            PermissionState state = this.getPermissionState(alias);
+            Log.d("capacitor-esp-provision", String.format("checking %s -> %s", alias, state.toString()));
+            if (state != PermissionState.GRANTED) {
                 allPermitted = false;
                 Log.d("capacitor-esp-provision", String.format("Permission alias '%s' not permitted", alias));
             }
@@ -124,14 +125,15 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
     public boolean locationPermissionsGranted(){
         boolean allPermitted = true;
         for (String alias: this.locationPermissionAliases()) {
-            if (this.getPermissionState(alias) != PermissionState.GRANTED) {
+            PermissionState state = this.getPermissionState(alias);
+            Log.d("capacitor-esp-provision", String.format("checking %s -> %s", alias, state.toString()));
+            if (state != PermissionState.GRANTED) {
                 allPermitted = false;
                 Log.d("capacitor-esp-provision", String.format("Permission alias '%s' not permitted", alias));
             }
         }
         return allPermitted;
     }
-
 
     @PluginMethod
     public void checkPermissions(PluginCall call) {
