@@ -180,10 +180,14 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
         call.resolve(this.getPermissions());
     }
 
+    // TODO: this function seems old - kill it with fire
     private JSObject getPermissions(){
+        PermissionState blePermission = this.blePermissionsGranted() ? PermissionState.GRANTED : PermissionState.DENIED;
+        PermissionState locationPermission = this.locationPermissionsGranted() ? PermissionState.GRANTED : PermissionState.DENIED;
+
         JSObject ret = new JSObject();
-        ret.put("location", this.locationPermissionsGranted());
-        ret.put("ble", this.blePermissionsGranted());
+        ret.put("location", blePermission.toString());
+        ret.put("ble", locationPermission.toString());
         return ret;
     }
 
