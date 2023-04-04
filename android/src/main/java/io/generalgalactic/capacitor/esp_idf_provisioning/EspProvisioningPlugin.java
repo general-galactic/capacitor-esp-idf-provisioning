@@ -3,7 +3,6 @@ package io.generalgalactic.capacitor.esp_idf_provisioning;
 import android.Manifest;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
 
@@ -12,7 +11,6 @@ import com.espressif.provisioning.ESPDevice;
 import com.espressif.provisioning.WiFiAccessPoint;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
-import com.getcapacitor.PermissionState;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
