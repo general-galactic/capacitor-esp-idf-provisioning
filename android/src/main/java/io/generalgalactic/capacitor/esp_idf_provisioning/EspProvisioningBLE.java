@@ -205,12 +205,12 @@ public class EspProvisioningBLE {
     public void searchESPDevices(String devicePrefix, ESPConstants.TransportType transport, ESPConstants.SecurityType security, ScanListener listener) {
         if (!this.assertBluetooth(null)) return;
 
-        if (ActivityCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Error permissionError = new Error("Not able to start scan as Location permission is not granted.");
-            errorLog(permissionError);
-            listener.errorOccurred(permissionError);
-            return;
-        }
+        // if (ActivityCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        //     Error permissionError = new Error("Not able to start scan as Location permission is not granted.");
+        //     errorLog(permissionError);
+        //     listener.errorOccurred(permissionError);
+        //     return;
+        // }
 
         // Clear the device cache
         this.devices = new HashMap<String, DiscoveredBluetoothDevice>();
