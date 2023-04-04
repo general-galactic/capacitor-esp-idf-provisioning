@@ -48,30 +48,6 @@ class EventCallback {
             strings = {
                 Manifest.permission.BLUETOOTH_ADMIN
             }
-        ),
-        @Permission(
-            alias = "BLUETOOTH",
-            strings = {
-                Manifest.permission.BLUETOOTH
-            }
-        ),
-        @Permission(
-            alias = "BLUETOOTH_ADMIN",
-            strings = {
-                Manifest.permission.BLUETOOTH_ADMIN
-            }
-        ),
-        @Permission(
-            alias = "ACCESS_COARSE_LOCATION",
-            strings = {
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            }
-        ),
-        @Permission(
-            alias = "ACCESS_FINE_LOCATION",
-            strings = {
-                Manifest.permission.ACCESS_FINE_LOCATION
-            }
         )
     }
 )
@@ -91,17 +67,7 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
 
     @PluginMethod
     public void requestPermissions(PluginCall call) {
-        boolean needsRequest = false;
-
         if(this.implementation.hasBLEHardware() && !this.implementation.blePermissionsGranted()){
-            needsRequest = true;
-        }
-
-        if(!this.implementation.locationPermissionsGranted()){
-            needsRequest = true;
-        }
-
-        if(needsRequest){
             String[] aliases = this.permissionAliases();
             Log.d("capacitor-esp-provision", String.format("Requesting permission aliases: %s", String.join(", ", aliases)));
             requestPermissionForAliases(aliases, call, "permissionsCallback");
@@ -120,21 +86,16 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
             return;
         }
 
-        if(!this.implementation.locationPermissionsGranted()){
-            call.reject("Location access is required to use BLE");
-            return;
-        }
-
         call.resolve(this.getPermissions());
     }
 
     private String[] permissionAliases(){
-        return Stream.concat(Arrays.stream(this.implementation.blePermissionAliases()), Arrays.stream(this.implementation.locationPermissionAliases())).toArray(String[]::new);
+        return this.implementation.blePermissionAliases();
+        // return Stream.concat(Arrays.stream(this.implementation.blePermissionAliases()), Arrays.stream(this.implementation.locationPermissionAliases())).toArray(String[]::new);
     }
 
     private JSObject getPermissions(){
         JSObject ret = new JSObject();
-        ret.put("location", this.implementation.locationPermissionsGranted());
         ret.put("ble", this.implementation.blePermissionsGranted());
         return ret;
     }
@@ -146,10 +107,6 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
 
     private JSObject buildStatus(){
         JSObject ret = new JSObject();
-
-        JSObject location = new JSObject();
-        location.put("allowed", this.implementation.locationPermissionsGranted());
-        ret.put("location", location);
 
         JSObject ble = new JSObject();
         ble.put("supported", this.implementation.hasBLEHardware());

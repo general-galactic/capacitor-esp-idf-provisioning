@@ -161,25 +161,6 @@ public class EspProvisioningBLE {
         return allPermitted;
     }
 
-    public String[] locationPermissionAliases(){
-        if (Build.VERSION.SDK_INT >= 31) {
-            return new String[] { }; // "ACCESS_FINE_LOCATION"
-        } else {
-            return new String[] { "ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION" };
-        }
-    }
-
-    public boolean locationPermissionsGranted(){
-        boolean allPermitted = true;
-        for (String alias: this.locationPermissionAliases()) {
-            if (ContextCompat.checkSelfPermission(this.bridge.getContext(), alias) != PackageManager.PERMISSION_GRANTED) {
-                allPermitted = false;
-                Log.d("capacitor-esp-provision", String.format("Permission alias '%s' not permitted", alias));
-            }
-        }
-        return allPermitted;
-    }
-
     public boolean assertBluetooth(UsesBluetooth listener) {
         if(!this.hasBLEHardware()) {
             if (listener != null) listener.bleNotSupported();
