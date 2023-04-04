@@ -96,6 +96,7 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
     @PluginMethod
     public void requestPermissions(PluginCall call) {
         boolean needsRequest = false;
+
         if(this.implementation.hasBLEHardware() && !this.implementation.blePermissionsGranted()){
             needsRequest = true;
         }
@@ -119,7 +120,7 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
         Log.d("capacitor-esp-provision", String.format("Requested ble permissions [%s]: hasBLEHardware=%b; blePermissionGranted=%b;", String.join(", ", aliases), this.implementation.hasBLEHardware(), this.implementation.blePermissionsGranted()));
 
         if(this.implementation.hasBLEHardware() && !this.implementation.blePermissionsGranted()){
-            call.reject("BLE is required");
+            call.reject(String.format("BLE is required [hasBLEHardware=%b; blePermissionsGranted=%b]", this.implementation.hasBLEHardware(), this.implementation.blePermissionsGranted());
             return;
         }
 
@@ -148,18 +149,18 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
     }
 
     private JSObject buildStatus(){
+        JSObject ret = new JSObject();
+
         JSObject location = new JSObject();
-        location.put("allowed", this.implementation.locationPermissionAliases());
+        location.put("allowed", this.implementation.locationPermissionsGranted());
+        ret.put("location", location);
 
         JSObject ble = new JSObject();
         ble.put("supported", this.implementation.hasBLEHardware());
         ble.put("allowed", this.implementation.blePermissionsGranted());
         ble.put("poweredOn", this.implementation.bleIsEnabled());
-
-        JSObject ret = new JSObject();
         ret.put("ble", ble);
-        ret.put("location", location);
-
+        
         return ret;
     }
 
