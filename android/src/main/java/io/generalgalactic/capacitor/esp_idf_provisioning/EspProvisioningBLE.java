@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
 
@@ -27,6 +28,7 @@ import com.espressif.provisioning.listeners.ProvisionListener;
 import com.espressif.provisioning.listeners.ResponseListener;
 import com.espressif.provisioning.listeners.WiFiScanListener;
 import com.getcapacitor.Bridge;
+import com.getcapacitor.PermissionState;
 import com.getcapacitor.PluginMethod;
 
 import org.greenrobot.eventbus.EventBus;
@@ -140,14 +142,42 @@ public class EspProvisioningBLE {
         return adapter.isEnabled();
     }
 
-    public boolean blePermissionsArGranted(){
-        if (ContextCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) return false;
-        if (ContextCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) return false;
-//        if (ContextCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) return false;
-//        if (ContextCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) return false;
-        if (ContextCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) return false;
-        if (ContextCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) return false;
-        return true;
+    public String[] blePermissionAliases(){
+        if (Build.VERSION.SDK_INT >= 31) {
+            return new String[] { "BLUETOOTH_SCAN", "BLUETOOTH_CONNECT"};
+        } else {
+            return new String[] { "BLUETOOTH", "BLUETOOTH_ADMIN" };
+        }
+    }
+
+    public boolean blePermissionsGranted(){
+        boolean allPermitted = true;
+        for (String alias: this.blePermissionAliases()) {
+            if (ContextCompat.checkSelfPermission(this.bridge.getContext(), alias) != PackageManager.PERMISSION_GRANTED) {
+                allPermitted = false;
+                Log.d("capacitor-esp-provision", String.format("Permission alias '%s' not permitted", alias));
+            }
+        }
+        return allPermitted;
+    }
+
+    public String[] locationPermissionAliases(){
+        if (Build.VERSION.SDK_INT >= 31) {
+            return new String[] { "ACCESS_FINE_LOCATION" };
+        } else {
+            return new String[] { "ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION" };
+        }
+    }
+
+    public boolean locationPermissionsGranted(){
+        boolean allPermitted = true;
+        for (String alias: this.locationPermissionAliases()) {
+            if (ContextCompat.checkSelfPermission(this.bridge.getContext(), alias) != PackageManager.PERMISSION_GRANTED) {
+                allPermitted = false;
+                Log.d("capacitor-esp-provision", String.format("Permission alias '%s' not permitted", alias));
+            }
+        }
+        return allPermitted;
     }
 
     public boolean assertBluetooth(UsesBluetooth listener) {
@@ -156,7 +186,7 @@ public class EspProvisioningBLE {
             return false;
         }
 
-        if(!this.blePermissionsArGranted()) {
+        if(!this.blePermissionsGranted()) {
             if (listener != null) listener.blePermissionNotGranted();
             return false;
         }
