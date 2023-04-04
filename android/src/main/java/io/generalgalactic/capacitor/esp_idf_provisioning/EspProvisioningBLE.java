@@ -142,44 +142,6 @@ public class EspProvisioningBLE {
         return adapter.isEnabled();
     }
 
-    public String[] blePermissionAliases(){
-        if (Build.VERSION.SDK_INT >= 31) {
-            return new String[] { "BLUETOOTH_SCAN", "BLUETOOTH_CONNECT" };
-        } else {
-            return new String[] { "BLUETOOTH", "BLUETOOTH_ADMIN" };
-        }
-    }
-
-    public boolean blePermissionsGranted(){
-        boolean allPermitted = true;
-        for (String alias: this.blePermissionAliases()) {
-            if (ContextCompat.checkSelfPermission(this.bridge.getContext(), alias) != PackageManager.PERMISSION_GRANTED) {
-                allPermitted = false;
-                Log.d("capacitor-esp-provision", String.format("Permission alias '%s' not permitted", alias));
-            }
-        }
-        return allPermitted;
-    }
-
-    public String[] locationPermissionAliases(){
-        if (Build.VERSION.SDK_INT >= 31) {
-            return new String[] { }; // "ACCESS_FINE_LOCATION"
-        } else {
-            return new String[] { "ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION" };
-        }
-    }
-
-    public boolean locationPermissionsGranted(){
-        boolean allPermitted = true;
-        for (String alias: this.locationPermissionAliases()) {
-            if (ContextCompat.checkSelfPermission(this.bridge.getContext(), alias) != PackageManager.PERMISSION_GRANTED) {
-                allPermitted = false;
-                Log.d("capacitor-esp-provision", String.format("Permission alias '%s' not permitted", alias));
-            }
-        }
-        return allPermitted;
-    }
-
     public boolean assertBluetooth(UsesBluetooth listener) {
         if(!this.hasBLEHardware()) {
             if (listener != null) listener.bleNotSupported();
@@ -199,6 +161,24 @@ public class EspProvisioningBLE {
         return true;
     }
 
+    private boolean blePermissionsGranted(){
+        if (Build.VERSION.SDK_INT >= 31) {
+            if (ActivityCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+            if (ActivityCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        } else {
+            if (ActivityCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+            if (ActivityCompat.checkSelfPermission(this.bridge.getContext(), Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     @SuppressLint("MissingPermission")
     @PluginMethod
@@ -269,6 +249,7 @@ public class EspProvisioningBLE {
         this.getESPProvisionManager().searchBleEspDevices(devicePrefix, bleScanListener);
     }
 
+    @SuppressLint("MissingPermission")
     public void connect(String deviceName, String proofOfPossession, ConnectListener listener){
         if (!this.assertBluetooth(null)) return;
 
