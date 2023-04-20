@@ -8,6 +8,10 @@ A capacitor plugin that wraps the Espressif IDF Provisioning libraries for iOS a
 
 Using this library will allow you to use an Ionic app to provision Espressif devices running the WiFi provisioning stack.
 
+## Android Support
+
+This project will only work in Android apps using SDK 12 or higher. I will accept a pull request to enable support for older SDKs. Most of the code to support the older permissions is already in place but I need help with testing.
+
 ## Install
 
 ```bash
