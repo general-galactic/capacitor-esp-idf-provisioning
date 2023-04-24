@@ -184,7 +184,8 @@ sendCustomDataString(options: { deviceName: string; path: string; dataString: st
 ```
 
 Send a custom string to the device with the given name. This is usefull if you need to share other data with
-your device during provisioning.
+your device during provisioning. NOTE: Android will truncate returned strings to around 512 bytes. If you need
+to send more than 512 bytes back on a read you'll need to implement a mechanism to do so.
 
 | Param         | Type                                                                   |
 | ------------- | ---------------------------------------------------------------------- |
