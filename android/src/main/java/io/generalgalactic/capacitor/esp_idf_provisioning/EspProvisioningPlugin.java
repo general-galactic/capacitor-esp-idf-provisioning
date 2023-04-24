@@ -99,7 +99,7 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
 
     public String[] locationPermissionAliases(){
         if (Build.VERSION.SDK_INT >= 31) {
-            return new String[] { }; // "ACCESS_FINE_LOCATION"
+            return new String[] {}; // Not needed for sdk >31
         } else {
             return new String[] { "ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION" };
         }

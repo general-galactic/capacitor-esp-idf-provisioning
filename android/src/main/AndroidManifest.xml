@@ -2,8 +2,15 @@
     package="io.generalgalactic.capacitor.esp_idf_provisioning"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- BLE on Android SDK >= 31 -->
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" tools:targetApi="s" android:usesPermissionFlags="neverForLocation" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" tools:targetApi="s" />
+
+    <!-- BLE on Android SDK < 31 -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="false" />
 </manifest>
