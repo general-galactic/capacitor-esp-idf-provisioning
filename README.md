@@ -10,7 +10,7 @@ Using this library will allow you to use an Ionic app to provision Espressif dev
 
 ## Android Support
 
-This project will only work in Android apps using SDK 12 or higher. I will accept a pull request to enable support for older SDKs. Most of the code to support the older permissions is already in place but I need help with testing.
+This project will only work in Android apps using SDK Level 25 or higher. [Android SDK Distribution Stats](https://apilevels.com)
 
 ## Install
 
