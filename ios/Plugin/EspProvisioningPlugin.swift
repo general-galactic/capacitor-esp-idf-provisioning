@@ -303,8 +303,14 @@ public class EspProvisioningPlugin: CAPPlugin {
             return "wpawpa2psk"
         case .wpa2Enterprise:
             return "wpa2enterprise"
+        case .wpa2Wpa3Psk:
+            return "wpa2Wpa3Psk"
+        case .wpa3Psk:
+            return "wpa3Psk"
         case .UNRECOGNIZED(let int):
             return "unrecognized:\(int)"
+        default:
+            return "unrecognized"
         }
     }
     
