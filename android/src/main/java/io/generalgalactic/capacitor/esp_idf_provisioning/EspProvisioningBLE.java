@@ -355,7 +355,7 @@ public class EspProvisioningBLE {
         ESPDevice espDevice = this.getESPProvisionManager().getEspDevice();
         if(espDevice == null) return null;
 
-        if( !espDevice.getDeviceName().equals(bleDevice.getName()) ){
+        if( !Objects.equals(espDevice.getDeviceName(), bleDevice.getName()) ){
             debugLog(String.format("Device mismatch. %s != %s", espDevice.getDeviceName(), bleDevice.getName()));
             return null;
         }
