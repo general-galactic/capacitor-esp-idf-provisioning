@@ -23,10 +23,22 @@ export type ESPDevice = {
   advertisementData?: ESPDeviceAdvertisingData
 }
 
+export enum ESPWifiAuthMode {
+  Open = 0,
+  Wep = 1,
+  Wpa2Enterprise = 2,
+  Wpa2Psk = 3,
+  WpaPsk = 4,
+  WpaWpa2Psk = 5,
+  Wpa3Psk = 6,
+  Wpa2Wpa3Psk = 7,
+}
+
+
 export type ESPNetwork = {
   ssid: string
   rssi: number
-  auth: 'open' | 'wep' | 'wpapsk' | 'wpawpa2psk' | 'wpa2enterprise' | 'unknown'
+  security: ESPWifiAuthMode
 }
 
 // https://capacitorjs.com/docs/plugins/web#permission-status-definitions
