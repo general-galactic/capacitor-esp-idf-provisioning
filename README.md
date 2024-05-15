@@ -222,7 +222,7 @@ Disconnect from the device.
 openLocationSettings() => Promise<{ value: boolean; }>
 ```
 
-Open the user's location settings for your app. iOS only.
+Open the user's location settings for your app. Android only.
 
 **Returns:** <code>Promise&lt;{ value: boolean; }&gt;</code>
 
@@ -235,7 +235,7 @@ Open the user's location settings for your app. iOS only.
 openBluetoothSettings() => Promise<{ value: boolean; }>
 ```
 
-Open the user's bluetooth settings for your app. iOS only.
+Open the user's bluetooth settings for your app. Android only.
 
 **Returns:** <code>Promise&lt;{ value: boolean; }&gt;</code>
 
