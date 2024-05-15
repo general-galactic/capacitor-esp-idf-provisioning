@@ -68,28 +68,28 @@ export interface EspProvisioningPlugin extends Plugin {
   /**
    * Perform a BLE scan to find devices that are connection with the given devicePrefix. The transport and security
    * parameters map directly to ESPProvision's own values.
-   * 
+   *
    * @param options {{ devicePrefix: string, transport: ESPTransport, security: ESPSecurity }}
    */
   searchESPDevices(options: { devicePrefix: string, transport: ESPTransport, security: ESPSecurity }): Promise<{ devices?: ESPDevice[] }>;
 
   /**
    * Connect to the device with the given name using the given proofOfPossession.
-   * 
+   *
    * @param options {{ deviceName: string, proofOfPossession: string }}
    */
   connect(options: { deviceName: string, proofOfPossession: string }): Promise<{ connected: boolean }>;
 
   /**
    * Request a list of available WiFi networks from the device with the given name.
-   * 
+   *
    * @param options {{ deviceName: string }}
    */
   scanWifiList(options: { deviceName: string }): Promise<{ networks?: ESPNetwork[] }>;
 
   /**
    * Provision the device onto WiFi using the given ssid and passPhrase.
-   * 
+   *
    * @param options {{ deviceName: string, ssid: string, passPhrase: string }}
    */
   provision(options: { deviceName: string, ssid: string, passPhrase?: string }): Promise<{ success: boolean }>;
@@ -97,8 +97,8 @@ export interface EspProvisioningPlugin extends Plugin {
   /**
    * Send a custom string to the device with the given name. This is usefull if you need to share other data with
    * your device during provisioning. NOTE: Android will truncate returned strings to around 512 bytes. If you need
-   * to send more than 512 bytes back on a read you'll need to implement a mechanism to do so. 
-   * 
+   * to send more than 512 bytes back on a read you'll need to implement a mechanism to do so.
+   *
    * @param options {{ deviceName: string, path: string, dataString: string }}
    * @returns {{ success: boolean, returnString: string }}
    */
@@ -106,18 +106,18 @@ export interface EspProvisioningPlugin extends Plugin {
 
   /**
    * Disconnect from the device.
-   * 
+   *
    * @param options {{ deviceName: string }}
    */
   disconnect(options: { deviceName: string }): Promise<void>;
 
   /**
-   * Open the user's location settings for your app. iOS only.
+   * Open the user's location settings for your app. Android only.
    */
   openLocationSettings(): Promise<{ value: boolean }>;
 
   /**
-   * Open the user's bluetooth settings for your app. iOS only.
+   * Open the user's bluetooth settings for your app. Android only.
    */
   openBluetoothSettings(): Promise<{ value: boolean }>;
 

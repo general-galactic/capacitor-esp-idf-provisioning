@@ -290,11 +290,35 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
         });
     }
 
+    private String securityIntToString(int security) {
+        switch (security) {
+            case 0:
+                return "open";
+            case 1:
+                return "wep";
+            case 2:
+                return "wpapsk";
+            case 3:
+                return "wpa2psk";
+            case 4:
+                return "wpawpa2psk";
+            case 5:
+                return "wpa2enterprise";
+            case 6:
+                return "wpa2Wpa3Psk";
+            case 7:
+                return "wpa3Psk";
+            default:
+                return "unrecognized";
+        }
+    }
+
     @PluginMethod
     public void scanWifiList(PluginCall call) {
         if (!this.implementation.assertBluetooth(new BluetoothRequiredCallHandler(call))) return;
 
         String deviceName = call.getString("deviceName");
+        EspProvisioningPlugin that = this;
         this.implementation.scanWifiList(deviceName, new ScanWiFiListener() {
 
             @Override
@@ -304,7 +328,7 @@ public class EspProvisioningPlugin extends Plugin implements EspProvisioningEven
                     JSObject network = new JSObject();
                     network.put("ssid", accessPoint.getWifiName());
                     network.put("rssi", accessPoint.getRssi());
-                    network.put("security", accessPoint.getSecurity());
+                    network.put("auth", that.securityIntToString(accessPoint.getSecurity()));
                     networksResponse.put(network);
                 }
                 JSObject ret = new JSObject();
