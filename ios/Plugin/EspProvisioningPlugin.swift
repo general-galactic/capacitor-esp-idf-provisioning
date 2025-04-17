@@ -289,7 +289,7 @@ public class EspProvisioningPlugin: CAPPlugin {
         }
     }
 
-    func authModeToString( _ authMode: Espressif_WifiAuthMode ) -> String {
+    func authModeToString( _ authMode: WifiAuthMode ) -> String {
         switch authMode {
         case .open:
             return "open"
