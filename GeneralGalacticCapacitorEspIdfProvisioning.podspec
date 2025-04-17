@@ -14,5 +14,5 @@ Pod::Spec.new do |s|
   s.ios.deployment_target  = '12.0'
   s.swift_version = '5.1'
   s.dependency 'Capacitor'
-  s.dependency 'ESPProvision', '2.1.2'
+  s.dependency 'ESPProvision', '3.0.3'
 end
